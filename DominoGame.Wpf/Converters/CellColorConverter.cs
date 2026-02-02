@@ -2,7 +2,7 @@ using System;
 using System.Globalization;
 using System.Windows.Data;
 using System.Windows.Media;
-
+using DominoGame.Core;
 namespace DominoGame.Wpf.Converters;
 
 public class CellColorConverter : IValueConverter

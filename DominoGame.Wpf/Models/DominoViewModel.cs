@@ -1,3 +1,4 @@
+using DominoGame.Core;
 namespace DominoGame.Wpf.Models
 {
     public class DominoViewModel

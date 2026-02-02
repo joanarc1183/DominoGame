@@ -1,6 +1,6 @@
 using System.Collections.ObjectModel;
 using DominoGame.Wpf.Models;
-
+using DominoGame.Core;
 namespace DominoGame.Wpf
 {
     public class MainViewModel

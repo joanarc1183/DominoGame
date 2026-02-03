@@ -1,5 +1,5 @@
 ﻿using System.Windows;
-using DominoGame.Wpf.ViewModels;
+using DominoGame.Wpf;
 
 namespace DominoGame.Wpf;
 
@@ -8,6 +8,6 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-        DataContext = new GameViewModel();
+        // DataContext = new GameViewModel();
     }
 }

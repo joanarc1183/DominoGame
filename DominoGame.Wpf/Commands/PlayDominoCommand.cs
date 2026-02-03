@@ -1,26 +1,29 @@
 using System;
 using System.Windows.Input;
-using DominoGame.Wpf.Models;
 using DominoGame.Wpf.ViewModels;
 
-namespace DominoGame.Wpf.Commands;
-
-public class PlayDominoCommand : ICommand
+namespace DominoGame.Wpf
 {
-    private readonly GameViewModel _vm;
-
-    public PlayDominoCommand(GameViewModel vm) => _vm = vm;
-
-    public bool CanExecute(object? parameter) => parameter is DominoTileViewModel;
-    public void Execute(object? parameter)
+    public class PlayDominoCommand : ICommand
     {
-        if (parameter is DominoTileViewModel tile)
-            _vm.PlayDomino(tile);
-    }
+        private readonly GameViewModel _game;
 
-    public event EventHandler? CanExecuteChanged
-    {
-        add => CommandManager.RequerySuggested += value;
-        remove => CommandManager.RequerySuggested -= value;
+        public PlayDominoCommand(GameViewModel game)
+        {
+            _game = game;
+        }
+
+        public bool CanExecute(object parameter)
+            => parameter is DominoTileViewModel tile && tile.IsPlayable;
+
+        public void Execute(object parameter)
+        {
+            if (parameter is DominoTileViewModel tile)
+            {
+                _game.PlayDomino(tile);
+            }
+        }
+
+        public event EventHandler? CanExecuteChanged;
     }
 }

@@ -2,7 +2,7 @@ using System;
 using System.Globalization;
 using System.Linq;
 using System.Windows.Data;
-using DominoGame.Wpf.Models;
+using DominoGame.Wpf.ViewModels;
 using System.Collections.ObjectModel;
 
 namespace DominoGame.Wpf.Converters

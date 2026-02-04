@@ -2,58 +2,51 @@ namespace DominoGame.Core;
 
 public class Board : IBoard
 {
-    private readonly LinkedList<Domino> _dominoes = new();
+    public LinkedList<Domino> Dominoes { get; private set; } = new();
+    public bool IsEmpty => Dominoes.Count == 0;
+    public Dot LeftEnd => Dominoes.First!.Value.LeftPip;
+    public Dot RightEnd => Dominoes.Last!.Value.RightPip;
 
-    public IReadOnlyList<Domino> Dominoes => _dominoes.ToList();
+    public bool CanPlace(Domino domino)
+    {
+        if (IsEmpty) return true;
+        return CanPlace(domino, BoardSide.Left) || CanPlace(domino, BoardSide.Right);
+    }
 
     public bool CanPlace(Domino domino, BoardSide side)
     {
-        if (_dominoes.Count == 0)
-            return true;
-
-        var leftValue = _dominoes.First!.Value.LeftPip;
-        var rightValue = _dominoes.Last!.Value.RightPip;
-
-        return side switch
-        {
-            BoardSide.Left =>
-                domino.LeftPip == leftValue || domino.RightPip == leftValue,
-
-            BoardSide.Right =>
-                domino.LeftPip == rightValue || domino.RightPip == rightValue,
-
-            _ => false
-        };
+        if (IsEmpty) return true;
+        return side == BoardSide.Left
+            ? domino.LeftPip == LeftEnd || domino.RightPip == LeftEnd
+            : domino.LeftPip == RightEnd || domino.RightPip == RightEnd;
     }
 
     public void Place(Domino domino, BoardSide side)
     {
         if (!CanPlace(domino, side))
-            throw new InvalidOperationException("Invalid domino placement");
+            throw new InvalidOperationException("Invalid placement");
 
-        if (_dominoes.Count == 0)
+        if (IsEmpty)
         {
-            _dominoes.AddFirst(domino);
+            Dominoes.AddFirst(domino);
             return;
         }
 
         if (side == BoardSide.Left)
         {
-            var target = _dominoes.First!.Value.LeftPip;
-
-            if (domino.RightPip != target)
-                domino = domino.Flip();
-
-            _dominoes.AddFirst(domino);
+            if (domino.RightPip == LeftEnd)
+                Dominoes.AddFirst(domino);
+            else
+                Dominoes.AddFirst(((Domino)domino).Flip());
         }
         else
         {
-            var target = _dominoes.Last!.Value.RightPip;
-
-            if (domino.LeftPip != target)
-                domino = domino.Flip();
-
-            _dominoes.AddLast(domino);
+            if (domino.LeftPip == RightEnd)
+                Dominoes.AddLast(domino);
+            else
+                Dominoes.AddLast(((Domino)domino).Flip());
         }
     }
+
+    public void Reset() => Dominoes.Clear();
 }

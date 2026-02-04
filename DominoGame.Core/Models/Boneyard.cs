@@ -6,23 +6,21 @@ namespace DominoGame.Core;
 
 public class Boneyard
 {
-    public List<Domino> Dominoes { get; private set; }
+    public List<Domino> Dominoes { get; private set; } = new();
     public bool IsEmpty => Dominoes.Count == 0;
 
-    public Boneyard(IEnumerable<Domino> fullSet)
+    public Boneyard(IEnumerable<Domino> set)
     {
-        Dominoes = fullSet.ToList();
+        Dominoes = set.ToList();
         Shuffle();
     }
 
     public Domino Draw()
     {
-        if (IsEmpty)
-            throw new InvalidOperationException("Boneyard is empty");
-
-        var domino = Dominoes[0];
+        if (IsEmpty) throw new InvalidOperationException("Boneyard empty");
+        var d = Dominoes[0];
         Dominoes.RemoveAt(0);
-        return domino;
+        return d;
     }
 
     private void Shuffle()

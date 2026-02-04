@@ -21,7 +21,19 @@ public class RelayCommand<T> : ICommand
     public void Execute(object? parameter)
     {
         if (parameter is T value)
+        {
             _execute(value);
+            return;
+        }
+
+        if (parameter is null)
+        {
+            _execute(default!);
+            return;
+        }
+
+        throw new ArgumentException(
+            $"Invalid command parameter. Expected {typeof(T).Name}, got {parameter.GetType().Name}.");
     }
 
     public event EventHandler? CanExecuteChanged

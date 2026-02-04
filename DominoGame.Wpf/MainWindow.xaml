@@ -9,11 +9,11 @@
         Height="640"
         Background="#0E2E2F">
 
-    <Window.DataContext>
-        <vm:GameViewModel/>
-    </Window.DataContext>
-
     <Grid Margin="20">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="240"/>
+        </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -21,6 +21,7 @@
         </Grid.RowDefinitions>
 
         <Border Grid.Row="0"
+                Grid.ColumnSpan="2"
                 Padding="12"
                 Background="#123B3D"
                 CornerRadius="10">
@@ -36,10 +37,17 @@
                            VerticalAlignment="Center"/>
 
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="Boneyard:"
+                    <TextBlock Text="Turn:"
                                Foreground="#CDE5E3"
                                Margin="0,0,6,0"/>
-                    <TextBlock Text="{Binding BoneyardCount}"
+                    <TextBlock Text="{Binding CurrentPlayerName}"
+                               Foreground="#F1F7F6"
+                               FontWeight="Bold"
+                               Margin="0,0,12,0"/>
+                    <TextBlock Text="Score:"
+                               Foreground="#CDE5E3"
+                               Margin="0,0,6,0"/>
+                    <TextBlock Text="{Binding CurrentPlayerScore}"
                                Foreground="#F1F7F6"
                                FontWeight="Bold"/>
                 </StackPanel>
@@ -47,6 +55,7 @@
         </Border>
 
         <Border Grid.Row="1"
+                Grid.Column="0"
                 Margin="0,18,0,18"
                 Background="#184B4E"
                 CornerRadius="14"
@@ -70,23 +79,11 @@
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
 
-                <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
-                    <Button Content="Place Left"
-                            Command="{Binding PlaceLeftCommand}"
-                            Margin="0,0,8,0"
-                            Padding="12,6"/>
-                    <Button Content="Place Right"
-                            Command="{Binding PlaceRightCommand}"
-                            Margin="0,0,8,0"
-                            Padding="12,6"/>
-                    <Button Content="Draw"
-                            Command="{Binding DrawCommand}"
-                            Padding="12,6"/>
-                </StackPanel>
             </StackPanel>
         </Border>
 
         <Border Grid.Row="2"
+                Grid.Column="0"
                 Background="#123B3D"
                 CornerRadius="12"
                 Padding="12">
@@ -133,6 +130,53 @@
                                     <ctrl:DominoTileControl/>
                                 </Button>
                             </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                    <Button Content="Place Left"
+                            Command="{Binding PlaceLeftCommand}"
+                            Margin="0,0,8,0"
+                            Padding="12,6"/>
+                    <Button Content="Place Right"
+                            Command="{Binding PlaceRightCommand}"
+                            Margin="0,0,8,0"
+                            Padding="12,6"/>
+                    <Button Content="Pass"
+                            Command="{Binding PassCommand}"
+                            Padding="12,6"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+        <Border Grid.Row="1"
+                Grid.Column="1"
+                Margin="16,18,0,18"
+                Background="#123B3D"
+                CornerRadius="12"
+                Padding="12">
+            <StackPanel>
+                <TextBlock Text="Scoreboard"
+                           Foreground="#DFF3F1"
+                           FontWeight="Bold"
+                           Margin="0,0,0,10"/>
+
+                <ItemsControl ItemsSource="{Binding Players}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Text="{Binding Name}"
+                                           Foreground="#F1F7F6"/>
+                                <TextBlock Grid.Column="1"
+                                           Text="{Binding Score}"
+                                           Foreground="#F2D06B"
+                                           FontWeight="Bold"/>
+                            </Grid>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>

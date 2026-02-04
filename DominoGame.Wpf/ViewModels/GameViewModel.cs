@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows.Input;
 using DominoGame.Core;
@@ -15,6 +16,8 @@ public class GameViewModel : INotifyPropertyChanged
 
     public ObservableCollection<DominoTileViewModel> PlayerHand { get; } = new();
     public ObservableCollection<DominoTileViewModel> BoardDominoes { get; } = new();
+    public ObservableCollection<PlayerScoreViewModel> Players { get; } = new();
+    public event Action<Player>? GameEnded;
 
     public DominoTileViewModel? SelectedDomino
     {
@@ -46,32 +49,46 @@ public class GameViewModel : INotifyPropertyChanged
         }
     }
 
-    public int BoneyardCount => _game.Boneyard.Dominoes.Count;
-
     public bool CanPlaceLeft => SelectedDomino is not null &&
+        !_game.IsRoundEnded &&
+        !_game.IsGameEnded &&
         _game.Board.CanPlace(SelectedDomino.Domino, BoardSide.Left);
 
     public bool CanPlaceRight => SelectedDomino is not null &&
+        !_game.IsRoundEnded &&
+        !_game.IsGameEnded &&
         _game.Board.CanPlace(SelectedDomino.Domino, BoardSide.Right);
 
-    public bool CanDraw => !_game.Boneyard.IsEmpty;
+    public bool CanPass => !_game.IsRoundEnded && !_game.IsGameEnded && !_game.CanPlay(_game.CurrentPlayer);
+
+    public string CurrentPlayerName => _game.CurrentPlayer.Name;
+    public int CurrentPlayerScore => _game.CurrentPlayer.Score;
 
     public RelayCommand<DominoTileViewModel> SelectDominoCommand { get; }
     public RelayCommand<object> PlaceLeftCommand { get; }
     public RelayCommand<object> PlaceRightCommand { get; }
-    public RelayCommand<object> DrawCommand { get; }
+    public RelayCommand<object> PassCommand { get; }
 
-    public GameViewModel()
+    public GameViewModel(List<Player> players, int maxScoreToWin)
     {
-        _game = new GameController();
+        _game = new GameController(players, new Board(), maxScoreToWin);
 
-        foreach (var domino in _game.Player.Hand)
-            PlayerHand.Add(new DominoTileViewModel(domino));
+        foreach (var player in _game.Players)
+            Players.Add(new PlayerScoreViewModel(player));
+
+        _game.OnTurnChanged += HandleTurnChanged;
+        _game.OnDominoPlaced += HandleDominoPlaced;
+        _game.OnPlayerPassed += HandlePlayerPassed;
+        _game.OnRoundEnded += HandleRoundEnded;
+        _game.OnGameEnded += HandleGameEnded;
+
+        _game.StartRound();
+        LoadCurrentPlayerHand();
 
         SelectDominoCommand = new RelayCommand<DominoTileViewModel>(SelectDomino);
         PlaceLeftCommand = new RelayCommand<object>(_ => PlaceSelected(BoardSide.Left), _ => CanPlaceLeft);
         PlaceRightCommand = new RelayCommand<object>(_ => PlaceSelected(BoardSide.Right), _ => CanPlaceRight);
-        DrawCommand = new RelayCommand<object>(_ => DrawDomino(), _ => CanDraw);
+        PassCommand = new RelayCommand<object>(_ => PassTurn(), _ => CanPass);
 
         RefreshBoard();
         UpdatePlayability();
@@ -94,28 +111,26 @@ public class GameViewModel : INotifyPropertyChanged
             return;
         }
 
-        _game.Play(SelectedDomino.Domino, side);
+        if (!_game.PlayDomino(_game.CurrentPlayer, SelectedDomino.Domino, side))
+        {
+            StatusMessage = "Could not place domino.";
+            return;
+        }
+
         PlayerHand.Remove(SelectedDomino);
         SelectedDomino = null;
         RefreshBoard();
 
-        StatusMessage = "Domino placed.";
-        OnPropertyChanged(nameof(BoneyardCount));
-        OnPropertyChanged(nameof(CanDraw));
+        _game.NextTurn();
+        UpdatePlayability();
     }
 
-    private void DrawDomino()
+    private void PassTurn()
     {
-        if (_game.Boneyard.IsEmpty)
+        if (!CanPass)
             return;
 
-        var domino = _game.Boneyard.Draw();
-        var vm = new DominoTileViewModel(domino);
-        PlayerHand.Add(vm);
-
-        StatusMessage = $"Drew {vm}.";
-        OnPropertyChanged(nameof(BoneyardCount));
-        OnPropertyChanged(nameof(CanDraw));
+        _game.NextTurn();
         UpdatePlayability();
     }
 
@@ -126,15 +141,79 @@ public class GameViewModel : INotifyPropertyChanged
             BoardDominoes.Add(new DominoTileViewModel(domino));
     }
 
+    private void LoadCurrentPlayerHand()
+    {
+        PlayerHand.Clear();
+        foreach (var domino in _game.GetHands(_game.CurrentPlayer))
+            PlayerHand.Add(new DominoTileViewModel(domino));
+    }
+
     private void UpdatePlayability()
     {
+        bool canInteract = !_game.IsRoundEnded && !_game.IsGameEnded;
+
         foreach (var tile in PlayerHand)
-            tile.IsPlayable = _game.Board.CanPlace(tile.Domino, BoardSide.Left) ||
-                              _game.Board.CanPlace(tile.Domino, BoardSide.Right);
+            tile.IsPlayable = canInteract &&
+                              (_game.Board.CanPlace(tile.Domino, BoardSide.Left) ||
+                               _game.Board.CanPlace(tile.Domino, BoardSide.Right));
 
         OnPropertyChanged(nameof(CanPlaceLeft));
         OnPropertyChanged(nameof(CanPlaceRight));
+        OnPropertyChanged(nameof(CanPass));
+        OnPropertyChanged(nameof(CurrentPlayerName));
+        OnPropertyChanged(nameof(CurrentPlayerScore));
+        RefreshScores();
         CommandManager.InvalidateRequerySuggested();
+    }
+
+    private void HandleTurnChanged(Player player)
+    {
+        LoadCurrentPlayerHand();
+        RefreshBoard();
+        UpdatePlayability();
+        StatusMessage = $"{player.Name}'s turn.";
+    }
+
+    private void HandleDominoPlaced(Player player, Domino domino, BoardSide side)
+    {
+        StatusMessage = $"{player.Name} placed {domino} on the {side}.";
+        RefreshBoard();
+    }
+
+    private void HandlePlayerPassed(Player player)
+    {
+        StatusMessage = $"{player.Name} passed.";
+        UpdatePlayability();
+    }
+
+    private void HandleRoundEnded(
+        Player? winner,
+        bool isBlocked,
+        IReadOnlyDictionary<Player, IReadOnlyList<Domino>> hands)
+    {
+        StatusMessage = winner is null
+            ? "Round ended in a tie."
+            : $"{winner.Name} wins the round.";
+
+        RefreshScores();
+
+        if (!_game.IsGameEnded)
+            _game.StartRound();
+
+        UpdatePlayability();
+    }
+
+    private void HandleGameEnded(Player winner)
+    {
+        StatusMessage = $"{winner.Name} wins the game!";
+        UpdatePlayability();
+        GameEnded?.Invoke(winner);
+    }
+
+    private void RefreshScores()
+    {
+        foreach (var player in Players)
+            player.Refresh();
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;

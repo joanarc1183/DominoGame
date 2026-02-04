@@ -1,0 +1,86 @@
+<Window x:Class="DominoGame.Wpf.SetupWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Domino Setup"
+        Width="480"
+        Height="480"
+        WindowStartupLocation="CenterScreen"
+        Background="#0E2E2F"
+        ResizeMode="NoResize">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Margin="0,0,0,12">
+            <TextBlock Text="Domino Game"
+                       Foreground="#F1F7F6"
+                       FontSize="22"
+                       FontWeight="Bold"/>
+            <TextBlock Text="Pilih target skor dan jumlah pemain, kemudian isi nama pemain."
+                       Foreground="#CDE5E3"
+                       Margin="0,6,0,0"/>
+        </StackPanel>
+
+        <Border Grid.Row="1"
+                Background="#123B3D"
+                CornerRadius="12"
+                Padding="12">
+            <StackPanel>
+                <Grid Margin="0,0,0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Margin="0,0,8,0">
+                        <TextBlock Text="Target skor"
+                                   Foreground="#DFF3F1"
+                                   Margin="0,0,0,6"/>
+                        <ComboBox x:Name="ScoreTargetCombo"
+                                  SelectedIndex="1"
+                                  Width="140">
+                            <ComboBoxItem Content="50"/>
+                            <ComboBoxItem Content="100"/>
+                            <ComboBoxItem Content="150"/>
+                        </ComboBox>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                        <TextBlock Text="Jumlah pemain"
+                                   Foreground="#DFF3F1"
+                                   Margin="0,0,0,6"/>
+                        <ComboBox x:Name="PlayerCountCombo"
+                                  SelectedIndex="0"
+                                  Width="140">
+                            <ComboBoxItem Content="2"/>
+                            <ComboBoxItem Content="3"/>
+                            <ComboBoxItem Content="4"/>
+                        </ComboBox>
+                    </StackPanel>
+                </Grid>
+
+                <TextBlock Text="Nama pemain"
+                           Foreground="#DFF3F1"
+                           Margin="0,0,0,6"/>
+
+                <StackPanel x:Name="PlayersPanel"/>
+            </StackPanel>
+        </Border>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
+            <Button Content="Cancel"
+                    Width="90"
+                    Margin="0,0,8,0"
+                    Padding="10,6"
+                    Click="Cancel_Click"/>
+            <Button Content="Start Game"
+                    Width="120"
+                    Padding="10,6"
+                    Click="Start_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>

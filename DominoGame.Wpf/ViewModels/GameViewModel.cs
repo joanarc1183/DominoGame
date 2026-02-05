@@ -1,6 +1,7 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Windows.Input;
 using DominoGame.Core;
 using DominoGame.Wpf.Commands;
@@ -11,13 +12,24 @@ namespace DominoGame.Wpf;
 public class GameViewModel : INotifyPropertyChanged
 {
     private readonly GameController _game;
+    private readonly Dictionary<Player, PlayerScoreViewModel> _playerLookup = new();
+    private readonly Dictionary<Player, int> _scoreSnapshot = new();
     private DominoTileViewModel? _selectedDomino;
-    private string _statusMessage = "Select a domino, then choose Place Left or Place Right.";
+    private string _statusMessage = "Geser kartu ke kiri atau kanan untuk bermain.";
+    private bool _autoAdvanceInProgress;
+    private bool _pendingPassMessage;
+    private string? _lastPassPlayerName;
 
-    public ObservableCollection<DominoTileViewModel> PlayerHand { get; } = new();
     public ObservableCollection<DominoTileViewModel> BoardDominoes { get; } = new();
     public ObservableCollection<PlayerScoreViewModel> Players { get; } = new();
+
+    public PlayerScoreViewModel? BottomPlayer { get; private set; }
+    public PlayerScoreViewModel? LeftPlayer { get; private set; }
+    public PlayerScoreViewModel? TopPlayer { get; private set; }
+    public PlayerScoreViewModel? RightPlayer { get; private set; }
+
     public event Action<Player>? GameEnded;
+    public event Action<string>? RoundEnded;
 
     public DominoTileViewModel? SelectedDomino
     {
@@ -74,7 +86,14 @@ public class GameViewModel : INotifyPropertyChanged
         _game = new GameController(players, new Board(), maxScoreToWin);
 
         foreach (var player in _game.Players)
-            Players.Add(new PlayerScoreViewModel(player));
+        {
+            var vm = new PlayerScoreViewModel(player);
+            Players.Add(vm);
+            _playerLookup[player] = vm;
+        }
+
+        AssignSeats();
+        InitializeScoreSnapshot();
 
         _game.OnTurnChanged += HandleTurnChanged;
         _game.OnDominoPlaced += HandleDominoPlaced;
@@ -83,7 +102,7 @@ public class GameViewModel : INotifyPropertyChanged
         _game.OnGameEnded += HandleGameEnded;
 
         _game.StartRound();
-        LoadCurrentPlayerHand();
+        LoadAllHands();
 
         SelectDominoCommand = new RelayCommand<DominoTileViewModel>(SelectDomino);
         PlaceLeftCommand = new RelayCommand<object>(_ => PlaceSelected(BoardSide.Left), _ => CanPlaceLeft);
@@ -94,10 +113,84 @@ public class GameViewModel : INotifyPropertyChanged
         UpdatePlayability();
     }
 
+    public bool CanPlaceDomino(DominoTileViewModel tile, BoardSide side)
+    {
+        return tile is not null &&
+               !_game.IsRoundEnded &&
+               !_game.IsGameEnded &&
+               _game.Board.CanPlace(tile.Domino, side);
+    }
+
+    public bool TryPlaceDominoFromDrag(DominoTileViewModel tile, BoardSide side)
+    {
+        var currentVm = CurrentPlayerViewModel;
+        if (currentVm is null || !currentVm.Hand.Contains(tile))
+            return false;
+
+        if (!CanPlaceDomino(tile, side))
+        {
+            StatusMessage = "Kartu tidak bisa ditempatkan di sisi itu.";
+            return false;
+        }
+
+        if (!_game.PlayDomino(_game.CurrentPlayer, tile.Domino, side))
+        {
+            StatusMessage = "Tidak bisa menaruh kartu.";
+            return false;
+        }
+
+        currentVm.Hand.Remove(tile);
+        SelectedDomino = null;
+        RefreshBoard();
+
+        _game.NextTurn();
+        UpdatePlayability();
+        return true;
+    }
+
+    private PlayerScoreViewModel? CurrentPlayerViewModel
+        => _playerLookup.TryGetValue(_game.CurrentPlayer, out var vm) ? vm : null;
+
+    private void AssignSeats()
+    {
+        BottomPlayer = Players.Count > 0 ? Players[0] : null;
+        LeftPlayer = null;
+        TopPlayer = null;
+        RightPlayer = null;
+
+        if (Players.Count == 2)
+        {
+            TopPlayer = Players[1];
+        }
+        else if (Players.Count == 3)
+        {
+            LeftPlayer = Players[1];
+            RightPlayer = Players[2];
+        }
+        else if (Players.Count >= 4)
+        {
+            LeftPlayer = Players[1];
+            TopPlayer = Players[2];
+            RightPlayer = Players[3];
+        }
+
+        OnPropertyChanged(nameof(BottomPlayer));
+        OnPropertyChanged(nameof(LeftPlayer));
+        OnPropertyChanged(nameof(TopPlayer));
+        OnPropertyChanged(nameof(RightPlayer));
+    }
+
+    private void InitializeScoreSnapshot()
+    {
+        _scoreSnapshot.Clear();
+        foreach (var player in _game.Players)
+            _scoreSnapshot[player] = player.Score;
+    }
+
     private void SelectDomino(DominoTileViewModel tile)
     {
         SelectedDomino = tile;
-        StatusMessage = $"Selected {tile}.";
+        StatusMessage = $"Pilih {tile}.";
     }
 
     private void PlaceSelected(BoardSide side)
@@ -107,17 +200,17 @@ public class GameViewModel : INotifyPropertyChanged
 
         if (!_game.Board.CanPlace(SelectedDomino.Domino, side))
         {
-            StatusMessage = "That domino cannot be placed on that side.";
+            StatusMessage = "Kartu tidak bisa ditempatkan di sisi itu.";
             return;
         }
 
         if (!_game.PlayDomino(_game.CurrentPlayer, SelectedDomino.Domino, side))
         {
-            StatusMessage = "Could not place domino.";
+            StatusMessage = "Tidak bisa menaruh kartu.";
             return;
         }
 
-        PlayerHand.Remove(SelectedDomino);
+        CurrentPlayerViewModel?.Hand.Remove(SelectedDomino);
         SelectedDomino = null;
         RefreshBoard();
 
@@ -141,21 +234,34 @@ public class GameViewModel : INotifyPropertyChanged
             BoardDominoes.Add(new DominoTileViewModel(domino));
     }
 
-    private void LoadCurrentPlayerHand()
+    private void LoadAllHands()
     {
-        PlayerHand.Clear();
-        foreach (var domino in _game.GetHands(_game.CurrentPlayer))
-            PlayerHand.Add(new DominoTileViewModel(domino));
+        foreach (var player in _game.Players)
+        {
+            if (_playerLookup.TryGetValue(player, out var vm))
+                vm.RefreshHand(_game.GetHands(player));
+        }
+
+        SelectedDomino = null;
     }
 
     private void UpdatePlayability()
     {
         bool canInteract = !_game.IsRoundEnded && !_game.IsGameEnded;
 
-        foreach (var tile in PlayerHand)
-            tile.IsPlayable = canInteract &&
-                              (_game.Board.CanPlace(tile.Domino, BoardSide.Left) ||
-                               _game.Board.CanPlace(tile.Domino, BoardSide.Right));
+        foreach (var vm in Players)
+            vm.IsCurrent = vm.Player == _game.CurrentPlayer;
+
+        foreach (var vm in Players)
+        {
+            foreach (var tile in vm.Hand)
+            {
+                tile.IsPlayable = vm.IsCurrent &&
+                                  canInteract &&
+                                  (_game.Board.CanPlace(tile.Domino, BoardSide.Left) ||
+                                   _game.Board.CanPlace(tile.Domino, BoardSide.Right));
+            }
+        }
 
         OnPropertyChanged(nameof(CanPlaceLeft));
         OnPropertyChanged(nameof(CanPlaceRight));
@@ -166,23 +272,53 @@ public class GameViewModel : INotifyPropertyChanged
         CommandManager.InvalidateRequerySuggested();
     }
 
+    private void AutoAdvanceIfStuck()
+    {
+        if (_autoAdvanceInProgress)
+            return;
+
+        _autoAdvanceInProgress = true;
+        try
+        {
+            while (!_game.IsRoundEnded && !_game.IsGameEnded && !_game.CanPlay(_game.CurrentPlayer))
+            {
+                _game.NextTurn();
+            }
+        }
+        finally
+        {
+            _autoAdvanceInProgress = false;
+        }
+    }
+
     private void HandleTurnChanged(Player player)
     {
-        LoadCurrentPlayerHand();
+        LoadAllHands();
         RefreshBoard();
         UpdatePlayability();
-        StatusMessage = $"{player.Name}'s turn.";
+
+        if (_pendingPassMessage && _lastPassPlayerName is not null)
+            StatusMessage = $"{_lastPassPlayerName} pass. Giliran {player.Name}.";
+        else
+            StatusMessage = $"Giliran {player.Name}.";
+
+        _pendingPassMessage = false;
+        _lastPassPlayerName = null;
+
+        AutoAdvanceIfStuck();
     }
 
     private void HandleDominoPlaced(Player player, Domino domino, BoardSide side)
     {
-        StatusMessage = $"{player.Name} placed {domino} on the {side}.";
+        StatusMessage = $"{player.Name} menaruh {domino} di {side}.";
         RefreshBoard();
     }
 
     private void HandlePlayerPassed(Player player)
     {
-        StatusMessage = $"{player.Name} passed.";
+        _pendingPassMessage = true;
+        _lastPassPlayerName = player.Name;
+        StatusMessage = $"{player.Name} pass.";
         UpdatePlayability();
     }
 
@@ -191,11 +327,26 @@ public class GameViewModel : INotifyPropertyChanged
         bool isBlocked,
         IReadOnlyDictionary<Player, IReadOnlyList<Domino>> hands)
     {
-        StatusMessage = winner is null
-            ? "Round ended in a tie."
-            : $"{winner.Name} wins the round.";
+        string message;
+
+        if (winner is null)
+        {
+            message = isBlocked
+                ? "Ronde berakhir seri karena buntu."
+                : "Ronde berakhir seri.";
+        }
+        else
+        {
+            int pointsBefore = _scoreSnapshot.TryGetValue(winner, out var prev) ? prev : winner.Score;
+            int gained = winner.Score - pointsBefore;
+            message = $"{winner.Name} menang ronde dan mendapat {gained} poin.";
+        }
+
+        StatusMessage = message;
+        RoundEnded?.Invoke(message);
 
         RefreshScores();
+        UpdateScoreSnapshot();
 
         if (!_game.IsGameEnded)
             _game.StartRound();
@@ -205,7 +356,7 @@ public class GameViewModel : INotifyPropertyChanged
 
     private void HandleGameEnded(Player winner)
     {
-        StatusMessage = $"{winner.Name} wins the game!";
+        StatusMessage = $"Game selesai! {winner.Name} menang.";
         UpdatePlayability();
         GameEnded?.Invoke(winner);
     }
@@ -214,6 +365,12 @@ public class GameViewModel : INotifyPropertyChanged
     {
         foreach (var player in Players)
             player.Refresh();
+    }
+
+    private void UpdateScoreSnapshot()
+    {
+        foreach (var player in _game.Players)
+            _scoreSnapshot[player] = player.Score;
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;

@@ -6,10 +6,12 @@ namespace DominoGame.Core;
 
 public class Player
 {
+    /// Nama pemain.
     public string Name { get; }
+    /// Skor pemain saat ini.
     public int Score { get; set; }
-    public List<Domino> Hand { get; } = new();
 
+    /// Membuat pemain dengan nama tertentu.
     public Player(string name)
     {
         Name = name;

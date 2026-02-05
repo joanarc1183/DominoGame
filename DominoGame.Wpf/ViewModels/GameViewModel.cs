@@ -11,26 +11,43 @@ namespace DominoGame.Wpf;
 
 public class GameViewModel : INotifyPropertyChanged
 {
+    // Mesin game utama yang memegang aturan dan state ronde/game.
     private readonly GameController _game;
+    // Lookup cepat dari model Player ke view model skor.
     private readonly Dictionary<Player, PlayerScoreViewModel> _playerLookup = new();
+    // Snapshot skor sebelumnya untuk menghitung poin yang didapat per ronde.
     private readonly Dictionary<Player, int> _scoreSnapshot = new();
+    // Domino yang sedang dipilih oleh pemain saat ini.
     private DominoTileViewModel? _selectedDomino;
+    // Pesan status yang tampil di UI.
     private string _statusMessage = "Geser kartu ke kiri atau kanan untuk bermain.";
+    // Flag untuk mencegah auto-advance re-entrancy.
     private bool _autoAdvanceInProgress;
+    // Flag agar pesan pass ditampilkan saat giliran berikutnya.
     private bool _pendingPassMessage;
+    // Nama pemain yang terakhir pass untuk kebutuhan pesan.
     private string? _lastPassPlayerName;
 
+    /// Domino yang sedang ada di board (untuk ditampilkan di UI).
     public ObservableCollection<DominoTileViewModel> BoardDominoes { get; } = new();
+    /// Daftar pemain dalam bentuk view model skor.
     public ObservableCollection<PlayerScoreViewModel> Players { get; } = new();
 
+    /// Pemain yang duduk di posisi bawah layar (pemain utama).
     public PlayerScoreViewModel? BottomPlayer { get; private set; }
+    /// Pemain yang duduk di posisi kiri layar.
     public PlayerScoreViewModel? LeftPlayer { get; private set; }
+    /// Pemain yang duduk di posisi atas layar.
     public PlayerScoreViewModel? TopPlayer { get; private set; }
+    /// Pemain yang duduk di posisi kanan layar.
     public PlayerScoreViewModel? RightPlayer { get; private set; }
 
+    /// Event ketika game selesai (pemenang sudah ditentukan).
     public event Action<Player>? GameEnded;
+    /// Event ketika ronde selesai (untuk menampilkan pesan).
     public event Action<string>? RoundEnded;
 
+    /// Domino yang dipilih pemain untuk dimainkan.
     public DominoTileViewModel? SelectedDomino
     {
         get => _selectedDomino;
@@ -50,6 +67,7 @@ public class GameViewModel : INotifyPropertyChanged
         }
     }
 
+    /// Pesan status yang muncul di banner UI.
     public string StatusMessage
     {
         get => _statusMessage;
@@ -61,26 +79,36 @@ public class GameViewModel : INotifyPropertyChanged
         }
     }
 
+    /// Menandakan apakah domino terpilih bisa ditempatkan di sisi kiri.
     public bool CanPlaceLeft => SelectedDomino is not null &&
         !_game.IsRoundEnded &&
         !_game.IsGameEnded &&
         _game.Board.CanPlace(SelectedDomino.Domino, BoardSide.Left);
 
+    /// Menandakan apakah domino terpilih bisa ditempatkan di sisi kanan.
     public bool CanPlaceRight => SelectedDomino is not null &&
         !_game.IsRoundEnded &&
         !_game.IsGameEnded &&
         _game.Board.CanPlace(SelectedDomino.Domino, BoardSide.Right);
 
+    /// Menandakan apakah pemain saat ini boleh pass.
     public bool CanPass => !_game.IsRoundEnded && !_game.IsGameEnded && !_game.CanPlay(_game.CurrentPlayer);
 
+    /// Nama pemain yang sedang mendapat giliran.
     public string CurrentPlayerName => _game.CurrentPlayer.Name;
+    /// Skor pemain yang sedang mendapat giliran.
     public int CurrentPlayerScore => _game.CurrentPlayer.Score;
 
+    /// Command untuk memilih domino dari tangan.
     public RelayCommand<DominoTileViewModel> SelectDominoCommand { get; }
+    /// Command untuk menaruh domino di sisi kiri.
     public RelayCommand<object> PlaceLeftCommand { get; }
+    /// Command untuk menaruh domino di sisi kanan.
     public RelayCommand<object> PlaceRightCommand { get; }
+    /// Command untuk pass giliran.
     public RelayCommand<object> PassCommand { get; }
 
+    /// Menyiapkan game baru, binding data, dan event listener.
     public GameViewModel(List<Player> players, int maxScoreToWin)
     {
         _game = new GameController(players, new Board(), maxScoreToWin);
@@ -113,6 +141,7 @@ public class GameViewModel : INotifyPropertyChanged
         UpdatePlayability();
     }
 
+    /// Mengecek apakah tile tertentu bisa ditempatkan pada sisi tertentu.
     public bool CanPlaceDomino(DominoTileViewModel tile, BoardSide side)
     {
         return tile is not null &&
@@ -121,6 +150,7 @@ public class GameViewModel : INotifyPropertyChanged
                _game.Board.CanPlace(tile.Domino, side);
     }
 
+    /// Mencoba menaruh domino melalui aksi drag-drop dari UI.
     public bool TryPlaceDominoFromDrag(DominoTileViewModel tile, BoardSide side)
     {
         var currentVm = CurrentPlayerViewModel;
@@ -148,9 +178,11 @@ public class GameViewModel : INotifyPropertyChanged
         return true;
     }
 
+    /// ViewModel pemain yang sedang mendapat giliran (jika ada).
     private PlayerScoreViewModel? CurrentPlayerViewModel
         => _playerLookup.TryGetValue(_game.CurrentPlayer, out var vm) ? vm : null;
 
+    /// Menentukan posisi kursi pemain (atas/bawah/kiri/kanan) berdasarkan jumlah pemain.
     private void AssignSeats()
     {
         BottomPlayer = Players.Count > 0 ? Players[0] : null;
@@ -180,6 +212,7 @@ public class GameViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(RightPlayer));
     }
 
+    /// Mengambil snapshot skor awal ronde untuk menghitung skor yang didapat.
     private void InitializeScoreSnapshot()
     {
         _scoreSnapshot.Clear();
@@ -187,12 +220,14 @@ public class GameViewModel : INotifyPropertyChanged
             _scoreSnapshot[player] = player.Score;
     }
 
+    /// Menangani aksi memilih domino dari tangan.
     private void SelectDomino(DominoTileViewModel tile)
     {
         SelectedDomino = tile;
         StatusMessage = $"Pilih {tile}.";
     }
 
+    /// Menaruh domino terpilih ke sisi yang dipilih.
     private void PlaceSelected(BoardSide side)
     {
         if (SelectedDomino is null)
@@ -218,6 +253,7 @@ public class GameViewModel : INotifyPropertyChanged
         UpdatePlayability();
     }
 
+    /// Melewati giliran jika pemain tidak bisa bermain.
     private void PassTurn()
     {
         if (!CanPass)
@@ -227,6 +263,7 @@ public class GameViewModel : INotifyPropertyChanged
         UpdatePlayability();
     }
 
+    /// Menyegarkan daftar domino yang tampil di board.
     private void RefreshBoard()
     {
         BoardDominoes.Clear();
@@ -234,6 +271,7 @@ public class GameViewModel : INotifyPropertyChanged
             BoardDominoes.Add(new DominoTileViewModel(domino));
     }
 
+    /// Memuat ulang tangan semua pemain dari model game.
     private void LoadAllHands()
     {
         foreach (var player in _game.Players)
@@ -245,6 +283,7 @@ public class GameViewModel : INotifyPropertyChanged
         SelectedDomino = null;
     }
 
+    /// Menghitung ulang status playable, skor, dan command state untuk UI.
     private void UpdatePlayability()
     {
         bool canInteract = !_game.IsRoundEnded && !_game.IsGameEnded;
@@ -272,6 +311,7 @@ public class GameViewModel : INotifyPropertyChanged
         CommandManager.InvalidateRequerySuggested();
     }
 
+    /// Otomatis melewati pemain yang tidak bisa bermain agar game tidak macet.
     private void AutoAdvanceIfStuck()
     {
         if (_autoAdvanceInProgress)
@@ -291,6 +331,7 @@ public class GameViewModel : INotifyPropertyChanged
         }
     }
 
+    /// Handler saat giliran pemain berubah.
     private void HandleTurnChanged(Player player)
     {
         LoadAllHands();
@@ -308,12 +349,14 @@ public class GameViewModel : INotifyPropertyChanged
         AutoAdvanceIfStuck();
     }
 
+    /// Handler saat pemain menaruh domino.
     private void HandleDominoPlaced(Player player, Domino domino, BoardSide side)
     {
         StatusMessage = $"{player.Name} menaruh {domino} di {side}.";
         RefreshBoard();
     }
 
+    /// Handler saat pemain pass.
     private void HandlePlayerPassed(Player player)
     {
         _pendingPassMessage = true;
@@ -322,6 +365,7 @@ public class GameViewModel : INotifyPropertyChanged
         UpdatePlayability();
     }
 
+    /// Handler saat ronde berakhir (menang, seri, atau buntu).
     private void HandleRoundEnded(
         Player? winner,
         bool isBlocked,
@@ -354,6 +398,7 @@ public class GameViewModel : INotifyPropertyChanged
         UpdatePlayability();
     }
 
+    /// Handler saat game berakhir (pemenang final).
     private void HandleGameEnded(Player winner)
     {
         StatusMessage = $"Game selesai! {winner.Name} menang.";
@@ -361,20 +406,24 @@ public class GameViewModel : INotifyPropertyChanged
         GameEnded?.Invoke(winner);
     }
 
+    /// Menyegarkan tampilan skor semua pemain.
     private void RefreshScores()
     {
         foreach (var player in Players)
             player.Refresh();
     }
 
+    /// Memperbarui snapshot skor setelah ronde selesai.
     private void UpdateScoreSnapshot()
     {
         foreach (var player in _game.Players)
             _scoreSnapshot[player] = player.Score;
     }
 
+    /// Event notifikasi perubahan properti untuk binding WPF.
     public event PropertyChangedEventHandler? PropertyChanged;
 
+    /// Memicu event PropertyChanged.
     private void OnPropertyChanged(string propertyName)
         => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 }

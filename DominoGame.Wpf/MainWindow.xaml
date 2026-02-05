@@ -203,62 +203,59 @@
                         <Grid Grid.Row="1"
                               HorizontalAlignment="Center"
                               VerticalAlignment="Center">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-
-                            <Border x:Name="DropLeftZone"
-                                    Width="60"
-                                    Margin="0,0,4,0"
-                                    Background="#123B3D"
-                                    CornerRadius="8"
-                                    Padding="4"
-                                    AllowDrop="True"
-                                    DragOver="DropZone_DragOver"
-                                    Drop="DropLeftZone_Drop">
-                                <TextBlock Text="Left"
-                                           Foreground="#CDE5E3"
-                                           FontSize="12"
-                                           HorizontalAlignment="Center"
-                                           VerticalAlignment="Center"/>
-                            </Border>
-
-                            <ItemsControl Grid.Column="1"
-                                          ItemsSource="{Binding BoardDominoes}"
-                                          Width="520"
-                                          Height="300"
-                                          HorizontalAlignment="Center"
-                                          VerticalAlignment="Center">
-                                <ItemsControl.ItemsPanel>
+                            <Grid x:Name="BoardArea"
+                                  Width="835"
+                                  Height="400">
+                                <ItemsControl x:Name="BoardItems"
+                                              ItemsSource="{Binding BoardDominoes}"
+                                              HorizontalAlignment="Center"
+                                              VerticalAlignment="Center">
+                                    <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
-                                        <ctrl:OShapePanel Padding="8"/>
+                                        <ctrl:OShapePanel Padding="16" ItemSpacing="3"/>
                                     </ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <ctrl:DominoTileControl/>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <ctrl:DominoTileControl/>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
 
-                            <Border x:Name="DropRightZone"
-                                    Grid.Column="2"
-                                    Width="60"
-                                    Margin="4,0,0,0"
-                                    Background="#123B3D"
-                                    CornerRadius="8"
-                                    Padding="4"
-                                    AllowDrop="True"
-                                    DragOver="DropZone_DragOver"
-                                    Drop="DropRightZone_Drop">
-                                <TextBlock Text="Right"
-                                           Foreground="#CDE5E3"
-                                           FontSize="12"
-                                           HorizontalAlignment="Center"
-                                           VerticalAlignment="Center"/>
-                            </Border>
+                                <Canvas x:Name="BoardOverlay"
+                                        Panel.ZIndex="2">
+                                    <Border x:Name="DropLeftZone"
+                                            Width="35"
+                                            Height="70"
+                                            Background="#123B3D"
+                                            CornerRadius="8"
+                                            Opacity="0.9"
+                                            AllowDrop="True"
+                                            DragOver="DropZone_DragOver"
+                                            Drop="DropLeftZone_Drop">
+                                        <TextBlock Text="Left"
+                                                   Foreground="#CDE5E3"
+                                                   FontSize="11"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center"/>
+                                    </Border>
+                                    <Border x:Name="DropRightZone"
+                                            Width="35"
+                                            Height="70"
+                                            Background="#123B3D"
+                                            CornerRadius="8"
+                                            Opacity="0.9"
+                                            AllowDrop="True"
+                                            DragOver="DropZone_DragOver"
+                                            Drop="DropRightZone_Drop">
+                                        <TextBlock Text="Right"
+                                                   Foreground="#CDE5E3"
+                                                   FontSize="11"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center"/>
+                                    </Border>
+                                </Canvas>
+                            </Grid>
                         </Grid>
                     </Grid>
                 </Border>

@@ -10,6 +10,27 @@ public class OShapePanel : Panel
     public double Padding { get; set; } = 8;
     public double ItemSpacing { get; set; } = 4;
 
+    public enum PathDirection
+    {
+        Right,
+        Down,
+        Left,
+        Up
+    }
+
+    public static readonly DependencyProperty FlowDirectionProperty =
+        DependencyProperty.RegisterAttached(
+            "FlowDirection",
+            typeof(PathDirection),
+            typeof(OShapePanel),
+            new FrameworkPropertyMetadata(PathDirection.Right));
+
+    public static void SetFlowDirection(DependencyObject element, PathDirection value)
+        => element.SetValue(FlowDirectionProperty, value);
+
+    public static PathDirection GetFlowDirection(DependencyObject element)
+        => (PathDirection)element.GetValue(FlowDirectionProperty);
+
     protected override Size MeasureOverride(Size availableSize)
     {
         foreach (UIElement child in InternalChildren)
@@ -56,10 +77,10 @@ public class OShapePanel : Panel
             return finalSize;
         }
 
-        double minX = left + vertW + ItemSpacing;
-        double maxX = right - vertW - ItemSpacing - horizW;
-        double minY = top + horizH + ItemSpacing;
-        double maxY = bottom - horizH - ItemSpacing - vertH;
+        double minX = left;
+        double maxX = right - horizW;
+        double minY = top;
+        double maxY = bottom - vertH;
 
         if (maxX < minX || maxY < minY)
         {
@@ -84,7 +105,7 @@ public class OShapePanel : Panel
         {
             double x = minX + i * (horizW + ItemSpacing);
             double y = top;
-            ArrangeChild(InternalChildren[index], new Point(x, y), new Size(horizW, horizH), rotateHorizontal: true, flip: false);
+            ArrangeChild(InternalChildren[index], new Point(x, y), new Size(horizW, horizH), rotateHorizontal: true, flip: false, flow: PathDirection.Right);
         }
 
         // Right column: top -> bottom (vertical)
@@ -92,7 +113,7 @@ public class OShapePanel : Panel
         {
             double x = right - vertW;
             double y = minY + i * (vertH + ItemSpacing);
-            ArrangeChild(InternalChildren[index], new Point(x, y), new Size(vertW, vertH), rotateHorizontal: false, flip: false);
+            ArrangeChild(InternalChildren[index], new Point(x, y), new Size(vertW, vertH), rotateHorizontal: false, flip: false, flow: PathDirection.Down);
         }
 
         // Bottom row: right -> left (horizontal)
@@ -100,7 +121,7 @@ public class OShapePanel : Panel
         {
             double x = maxX - i * (horizW + ItemSpacing);
             double y = bottom - horizH;
-            ArrangeChild(InternalChildren[index], new Point(x, y), new Size(horizW, horizH), rotateHorizontal: true, flip: true);
+            ArrangeChild(InternalChildren[index], new Point(x, y), new Size(horizW, horizH), rotateHorizontal: true, flip: true, flow: PathDirection.Left);
         }
 
         // Left column: bottom -> top (vertical)
@@ -108,13 +129,13 @@ public class OShapePanel : Panel
         {
             double x = left;
             double y = maxY - i * (vertH + ItemSpacing);
-            ArrangeChild(InternalChildren[index], new Point(x, y), new Size(vertW, vertH), rotateHorizontal: false, flip: true);
+            ArrangeChild(InternalChildren[index], new Point(x, y), new Size(vertW, vertH), rotateHorizontal: false, flip: true, flow: PathDirection.Up);
         }
 
         return finalSize;
     }
 
-    private static void ArrangeChild(UIElement child, Point position, Size size, bool rotateHorizontal, bool flip)
+    private static void ArrangeChild(UIElement child, Point position, Size size, bool rotateHorizontal, bool flip, PathDirection flow)
     {
         if (child is FrameworkElement element)
         {
@@ -124,6 +145,7 @@ public class OShapePanel : Panel
             element.LayoutTransform = angle == 0 ? Transform.Identity : new RotateTransform(angle);
         }
 
+        SetFlowDirection(child, flow);
         child.Arrange(new Rect(position, size));
     }
 

@@ -38,6 +38,10 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
 
+            <Border Grid.Row="1"
+                    Height="1"
+                    Background="Black"
+                    VerticalAlignment="Top"/>
         </Grid>
     </Border>
 </UserControl>

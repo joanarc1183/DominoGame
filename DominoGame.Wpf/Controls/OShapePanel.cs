@@ -7,7 +7,9 @@ namespace DominoGame.Wpf.Controls;
 
 public class OShapePanel : Panel
 {
+    // Jarak antara tepi panel dan item yang ditata.
     public double Padding { get; set; } = 8;
+    // Jarak antar item yang bersebelahan di sepanjang jalur.
     public double ItemSpacing { get; set; } = 4;
 
     public enum PathDirection
@@ -18,6 +20,7 @@ public class OShapePanel : Panel
         Up
     }
 
+    // Properti terpasang untuk mengetahui orientasi tiap tile di jalur.
     public static readonly DependencyProperty FlowDirectionProperty =
         DependencyProperty.RegisterAttached(
             "FlowDirection",
@@ -25,22 +28,28 @@ public class OShapePanel : Panel
             typeof(OShapePanel),
             new FrameworkPropertyMetadata(PathDirection.Right));
 
+    // Menetapkan arah aliran tile pada elemen.
     public static void SetFlowDirection(DependencyObject element, PathDirection value)
         => element.SetValue(FlowDirectionProperty, value);
 
+    // Mengambil arah aliran tile dari elemen.
     public static PathDirection GetFlowDirection(DependencyObject element)
         => (PathDirection)element.GetValue(FlowDirectionProperty);
 
+    // Mengukur ukuran yang dibutuhkan panel berdasarkan ukuran child.
     protected override Size MeasureOverride(Size availableSize)
     {
+        // Ukur tiap child pada ukuran idealnya agar bisa menghitung ukuran tile maksimum.
         foreach (UIElement child in InternalChildren)
             child.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
 
         return availableSize;
     }
 
+    // Menata posisi dan rotasi tile di sepanjang jalur panel.
     protected override Size ArrangeOverride(Size finalSize)
     {
+        // Atur child di sisi atas, kanan, bawah, lalu kiri untuk membentuk jalur "O".
         int count = InternalChildren.Count;
         if (count == 0)
             return finalSize;
@@ -68,6 +77,7 @@ public class OShapePanel : Panel
 
         if (topLen <= 0 && rightLen <= 0)
         {
+            // Jika tidak ada ruang untuk jalur, semua tile ditumpuk di tengah.
             foreach (UIElement child in InternalChildren)
             {
                 double cx = (finalSize.Width - maxW) / 2;
@@ -84,6 +94,7 @@ public class OShapePanel : Panel
 
         if (maxX < minX || maxY < minY)
         {
+            // Fallback aman untuk panel yang sangat kecil.
             foreach (UIElement child in InternalChildren)
             {
                 double cx = (finalSize.Width - maxW) / 2;
@@ -135,8 +146,10 @@ public class OShapePanel : Panel
         return finalSize;
     }
 
+    // Menata satu tile pada posisi, ukuran, dan rotasi tertentu.
     private static void ArrangeChild(UIElement child, Point position, Size size, bool rotateHorizontal, bool flip, PathDirection flow)
     {
+        // Putar tile agar sesuai arah jalur sambil menyimpan nilai flow yang konsisten.
         if (child is FrameworkElement element)
         {
             double angle = rotateHorizontal ? -90 : 0;

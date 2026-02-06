@@ -20,13 +20,16 @@ public partial class MainWindow : Window
         Loaded += HandleLoaded;
     }
 
+    // Konstruktor yang menerima view model untuk langsung dipasang ke DataContext.
     public MainWindow(GameViewModel viewModel) : this()
     {
         SetViewModel(viewModel);
     }
 
+    // Mengganti view model aktif dan mereset event handler terkait.
     private void SetViewModel(GameViewModel viewModel)
     {
+        // Jaga subscription event tetap sinkron saat mengganti view model aktif.
         if (_viewModel is not null)
         {
             _viewModel.GameEnded -= HandleGameEnded;
@@ -39,8 +42,10 @@ public partial class MainWindow : Window
         DataContext = _viewModel;
     }
 
+    // Menampilkan dialog saat ronde berakhir.
     private void HandleRoundEnded(string message)
     {
+        // Notifikasi UI saja; logika game ada di view model.
         MessageBox.Show(
             message,
             "Ronde Selesai",
@@ -48,8 +53,10 @@ public partial class MainWindow : Window
             MessageBoxImage.Information);
     }
 
+    // Menampilkan dialog saat game selesai dan menangani alur main lagi.
     private void HandleGameEnded(Player winner)
     {
+        // Alur UI untuk restart; dialog dan window tetap di layer view.
         var result = MessageBox.Show(
             $"{winner.Name} menang! Main lagi?",
             "Game Over",
@@ -77,32 +84,40 @@ public partial class MainWindow : Window
         Close();
     }
 
+    // Menyimpan titik awal mouse untuk kebutuhan drag tile.
     private void HandTile_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
+        // Simpan posisi awal mouse untuk mendeteksi ambang drag.
         _dragStartPoint = e.GetPosition(null);
     }
 
+    // Menyiapkan handler layout dan melakukan penempatan drop zone awal.
     private void HandleLoaded(object sender, RoutedEventArgs e)
     {
+        // Posisikan ulang drop zone saat layout board berubah.
         if (BoardItems is not null)
             BoardItems.LayoutUpdated += BoardItems_LayoutUpdated;
 
         UpdateDropZones();
     }
 
+    // Memperbarui posisi drop zone saat layout berubah.
     private void BoardItems_LayoutUpdated(object? sender, EventArgs e)
     {
         UpdateDropZones();
     }
 
+    // Menghitung ulang ukuran, orientasi, dan posisi drop zone.
     private void UpdateDropZones()
     {
+        // Hitung ukuran/orientasi drop zone dan posisinya relatif ke tile pertama/terakhir.
         if (BoardItems is null || BoardArea is null || DropLeftZone is null || DropRightZone is null)
             return;
 
         int count = BoardItems.Items.Count;
         if (count == 0)
         {
+            // Saat board kosong, letakkan kedua drop zone di tengah.
             const double defaultWidth = 70;
             const double defaultHeight = 35;
             const double gap = 8;
@@ -149,6 +164,7 @@ public partial class MainWindow : Window
         }
     }
 
+    // Mengembalikan arah yang berlawanan dari arah input.
     private static OShapePanel.PathDirection Opposite(OShapePanel.PathDirection direction)
         => direction switch
         {
@@ -158,6 +174,7 @@ public partial class MainWindow : Window
             _ => OShapePanel.PathDirection.Up
         };
 
+    // Menghitung posisi target drop zone berdasarkan arah aliran tile.
     private static Point OffsetByDirection(Rect origin, double width, double height, OShapePanel.PathDirection direction, double gap)
     {
         double centeredX = origin.Left + (origin.Width - width) / 2;
@@ -170,6 +187,7 @@ public partial class MainWindow : Window
         };
     }
 
+    // Menyetel ukuran drop zone mengikuti orientasi tile.
     private static void SetDropOrientation(FrameworkElement element, Rect tileRect, OShapePanel.PathDirection direction)
     {
         bool horizontal = direction == OShapePanel.PathDirection.Left || direction == OShapePanel.PathDirection.Right;
@@ -186,6 +204,7 @@ public partial class MainWindow : Window
         }
     }
 
+    // Menjaga posisi drop zone tetap berada di dalam area board.
     private void SetClampedPosition(FrameworkElement element, Point pos)
     {
         double x = Math.Max(0, Math.Min(pos.X, BoardArea!.ActualWidth - element.ActualWidth));
@@ -194,14 +213,17 @@ public partial class MainWindow : Window
         Canvas.SetTop(element, y);
     }
 
+    // Mengambil bounding rectangle sebuah elemen relatif terhadap BoardArea.
     private Rect GetElementRect(FrameworkElement element)
     {
         Point pos = element.TranslatePoint(new Point(0, 0), BoardArea);
         return new Rect(pos, new Size(element.ActualWidth, element.ActualHeight));
     }
 
+    // Memulai drag tile dari tangan pemain saat syarat terpenuhi.
     private void HandTile_PreviewMouseMove(object sender, MouseEventArgs e)
     {
+        // Mulai drag hanya jika tile playable dan pointer sudah bergerak cukup jauh.
         if (e.LeftButton != MouseButtonState.Pressed)
             return;
 
@@ -226,8 +248,10 @@ public partial class MainWindow : Window
         DragDrop.DoDragDrop(presenter, tile, DragDropEffects.Move);
     }
 
+    // Mengatur efek drag ketika tile melayang di atas drop zone.
     private void DropZone_DragOver(object sender, DragEventArgs e)
     {
+        // Beri feedback visual apakah tile bisa di-drop di sisi tersebut.
         if (!TryGetTileFromDrag(e, out var tile) || _viewModel is null)
         {
             e.Effects = DragDropEffects.None;
@@ -242,24 +266,30 @@ public partial class MainWindow : Window
         e.Handled = true;
     }
 
+    // Menangani drop tile di sisi kiri board.
     private void DropLeftZone_Drop(object sender, DragEventArgs e)
     {
+        // Commit langkah lewat view model.
         if (!TryGetTileFromDrag(e, out var tile) || _viewModel is null)
             return;
 
         _viewModel.TryPlaceDominoFromDrag(tile, BoardSide.Left);
     }
 
+    // Menangani drop tile di sisi kanan board.
     private void DropRightZone_Drop(object sender, DragEventArgs e)
     {
+        // Commit langkah lewat view model.
         if (!TryGetTileFromDrag(e, out var tile) || _viewModel is null)
             return;
 
         _viewModel.TryPlaceDominoFromDrag(tile, BoardSide.Right);
     }
 
+    // Mencoba mengambil tile dari data drag & drop.
     private static bool TryGetTileFromDrag(DragEventArgs e, out DominoTileViewModel tile)
     {
+        // Ambil tile yang sedang di-drag (jika ada) dari payload data.
         tile = null!;
         if (!e.Data.GetDataPresent(typeof(DominoTileViewModel)))
             return false;
@@ -268,8 +298,10 @@ public partial class MainWindow : Window
         return tile is not null;
     }
 
+    // Mencari parent visual bertipe T dari sebuah elemen.
     private static T? FindAncestor<T>(DependencyObject child) where T : DependencyObject
     {
+        // Telusuri visual tree ke atas untuk mencari parent dengan tipe yang diminta.
         DependencyObject current = child;
         while (current is not null)
         {

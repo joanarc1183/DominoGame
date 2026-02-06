@@ -7,8 +7,7 @@
         xmlns:vm="clr-namespace:DominoGame.Wpf"
         xmlns:ctrl="clr-namespace:DominoGame.Wpf.Controls"
         Title="Domino Game"
-        Width="980"
-        Height="640"
+        WindowState="Maximized"
         Background="#0E2E2F">
 
     <Window.Resources>

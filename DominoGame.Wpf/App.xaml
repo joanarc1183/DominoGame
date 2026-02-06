@@ -1,9 +1,12 @@
-﻿<Application x:Class="DominoGame.Wpf.App"
+﻿<!-- Application: x:Class mengikat ke App code-behind, xmlns untuk namespace XAML, xmlns:x untuk markup XAML,
+     xmlns:local untuk akses namespace aplikasi, xmlns:conv untuk akses converter. -->
+<Application x:Class="DominoGame.Wpf.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:DominoGame.Wpf"
              xmlns:conv="clr-namespace:DominoGame.Wpf.Converters">
     <Application.Resources>
+        <!-- DominoEnabledConverter: x:Key sebagai resource key untuk dipakai pada binding. -->
         <conv:DominoEnabledConverter x:Key="DominoEnabledConverter"/>
     </Application.Resources>
 </Application>

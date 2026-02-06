@@ -132,12 +132,9 @@ public partial class MainWindow : Window
         if (first is not null)
         {
             var tileRect = GetElementRect(first);
-            DropLeftZone.Width = tileRect.Width;
-            DropLeftZone.Height = tileRect.Height;
-
             var flow = OShapePanel.GetFlowDirection(first);
             var opposite = Opposite(flow);
-            ApplyDropRotation(DropLeftZone, opposite);
+            SetDropOrientation(DropLeftZone, tileRect, opposite);
             Point target = OffsetByDirection(tileRect, DropLeftZone.Width, DropLeftZone.Height, opposite, 6);
             SetClampedPosition(DropLeftZone, target);
         }
@@ -145,11 +142,8 @@ public partial class MainWindow : Window
         if (last is not null)
         {
             var tileRect = GetElementRect(last);
-            DropRightZone.Width = tileRect.Width;
-            DropRightZone.Height = tileRect.Height;
-
             var flow = OShapePanel.GetFlowDirection(last);
-            ApplyDropRotation(DropRightZone, flow);
+            SetDropOrientation(DropRightZone, tileRect, flow);
             Point target = OffsetByDirection(tileRect, DropRightZone.Width, DropRightZone.Height, flow, 6);
             SetClampedPosition(DropRightZone, target);
         }
@@ -166,22 +160,30 @@ public partial class MainWindow : Window
 
     private static Point OffsetByDirection(Rect origin, double width, double height, OShapePanel.PathDirection direction, double gap)
     {
+        double centeredX = origin.Left + (origin.Width - width) / 2;
         return direction switch
         {
             OShapePanel.PathDirection.Right => new Point(origin.Right + gap, origin.Top),
             OShapePanel.PathDirection.Left => new Point(origin.Left - width - gap, origin.Top),
-            OShapePanel.PathDirection.Down => new Point(origin.Left, origin.Bottom + gap),
-            _ => new Point(origin.Left, origin.Top - height - gap)
+            OShapePanel.PathDirection.Down => new Point(centeredX, origin.Bottom + gap),
+            _ => new Point(centeredX, origin.Top - height - gap)
         };
     }
 
-    private static void ApplyDropRotation(FrameworkElement element, OShapePanel.PathDirection direction)
+    private static void SetDropOrientation(FrameworkElement element, Rect tileRect, OShapePanel.PathDirection direction)
     {
-        // Horizontal for top/bottom (Left/Right flow), vertical for left/right (Up/Down flow)
-        if (direction == OShapePanel.PathDirection.Left || direction == OShapePanel.PathDirection.Right)
-            element.LayoutTransform = new RotateTransform(-90);
+        bool horizontal = direction == OShapePanel.PathDirection.Left || direction == OShapePanel.PathDirection.Right;
+        element.LayoutTransform = Transform.Identity;
+        if (horizontal)
+        {
+            element.Width = tileRect.Width;
+            element.Height = tileRect.Height;
+        }
         else
-            element.LayoutTransform = Transform.Identity;
+        {
+            element.Width = tileRect.Height;
+            element.Height = tileRect.Width;
+        }
     }
 
     private void SetClampedPosition(FrameworkElement element, Point pos)

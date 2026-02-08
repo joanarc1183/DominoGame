@@ -28,27 +28,21 @@ public partial class GameView : UserControl
     // Presenter kandidat saat mouse down.
     private ContentPresenter? _dragCandidatePresenter;
 
-    /// <summary>
     /// Inisialisasi GameView dan pasang handler Loaded.
-    /// </summary>
     public GameView()
     {
         InitializeComponent();
         Loaded += HandleLoaded;
     }
 
-    /// <summary>
     /// Menetapkan view model dan DataContext.
-    /// </summary>
     public void SetViewModel(GameViewModel viewModel)
     {
         _viewModel = viewModel;
         DataContext = _viewModel;
     }
 
-    /// <summary>
     /// Menangkap titik awal drag saat mouse ditekan pada hand.
-    /// </summary>
     private void HandItems_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
         if (sender is not ItemsControl itemsControl)
@@ -61,9 +55,7 @@ public partial class GameView : UserControl
         _dragStartPoint = e.GetPosition(this);
     }
 
-    /// <summary>
     /// Handler Loaded untuk memasang update layout board dan posisi drop zone.
-    /// </summary>
     private void HandleLoaded(object sender, RoutedEventArgs e)
     {
         if (BoardItems is not null)
@@ -72,17 +64,13 @@ public partial class GameView : UserControl
         UpdateDropZones();
     }
 
-    /// <summary>
     /// Handler update layout board untuk menghitung ulang drop zone.
-    /// </summary>
     private void BoardItems_LayoutUpdated(object? sender, EventArgs e)
     {
         UpdateDropZones();
     }
 
-    /// <summary>
     /// Mengatur posisi dan ukuran drop zone berdasarkan layout board.
-    /// </summary>
     private void UpdateDropZones()
     {
         if (BoardItems is null || BoardArea is null || DropLeftZone is null || DropRightZone is null)
@@ -137,9 +125,7 @@ public partial class GameView : UserControl
         }
     }
 
-    /// <summary>
     /// Mengembalikan arah berlawanan dari arah jalur.
-    /// </summary>
     private static OShapePanel.PathDirection Opposite(OShapePanel.PathDirection direction)
         => direction switch
         {
@@ -149,9 +135,7 @@ public partial class GameView : UserControl
             _ => OShapePanel.PathDirection.Up
         };
 
-    /// <summary>
     /// Menghitung titik offset dari sebuah rect berdasarkan arah dan jarak.
-    /// </summary>
     private static Point OffsetByDirection(Rect origin, double width, double height, OShapePanel.PathDirection direction, double gap)
     {
         double centeredX = origin.Left + (origin.Width - width) / 2;
@@ -164,9 +148,7 @@ public partial class GameView : UserControl
         };
     }
 
-    /// <summary>
     /// Menyesuaikan ukuran drop zone sesuai orientasi tile di board.
-    /// </summary>
     private static void SetDropOrientation(FrameworkElement element, Rect tileRect, OShapePanel.PathDirection direction)
     {
         bool horizontal = direction == OShapePanel.PathDirection.Left || direction == OShapePanel.PathDirection.Right;
@@ -183,9 +165,7 @@ public partial class GameView : UserControl
         }
     }
 
-    /// <summary>
     /// Menempatkan drop zone agar tetap berada dalam batas board.
-    /// </summary>
     private void SetClampedPosition(FrameworkElement element, Point pos)
     {
         double x = Math.Max(0, Math.Min(pos.X, BoardArea!.ActualWidth - element.ActualWidth));
@@ -194,18 +174,14 @@ public partial class GameView : UserControl
         Canvas.SetTop(element, y);
     }
 
-    /// <summary>
     /// Mengambil bounding rect elemen relatif ke board area.
-    /// </summary>
     private Rect GetElementRect(FrameworkElement element)
     {
         Point pos = element.TranslatePoint(new Point(0, 0), BoardArea);
         return new Rect(pos, new Size(element.ActualWidth, element.ActualHeight));
     }
 
-    /// <summary>
     /// Memulai drag-drop saat mouse bergerak melewati threshold.
-    /// </summary>
     private void HandItems_PreviewMouseMove(object sender, MouseEventArgs e)
     {
         if (e.LeftButton != MouseButtonState.Pressed)
@@ -245,9 +221,7 @@ public partial class GameView : UserControl
         }
     }
 
-    /// <summary>
     /// Menentukan apakah drop zone bisa menerima domino saat drag-over.
-    /// </summary>
     private void DropZone_DragOver(object sender, DragEventArgs e)
     {
         if (!TryGetTileFromDrag(e, out var tile) || _viewModel is null)
@@ -264,9 +238,7 @@ public partial class GameView : UserControl
         e.Handled = true;
     }
 
-    /// <summary>
     /// Handler drop di sisi kiri board.
-    /// </summary>
     private void DropLeftZone_Drop(object sender, DragEventArgs e)
     {
         if (!TryGetTileFromDrag(e, out var tile) || _viewModel is null)
@@ -275,9 +247,7 @@ public partial class GameView : UserControl
         _viewModel.TryPlaceDominoFromDrag(tile, BoardSide.Left);
     }
 
-    /// <summary>
     /// Handler drop di sisi kanan board.
-    /// </summary>
     private void DropRightZone_Drop(object sender, DragEventArgs e)
     {
         if (!TryGetTileFromDrag(e, out var tile) || _viewModel is null)
@@ -286,9 +256,7 @@ public partial class GameView : UserControl
         _viewModel.TryPlaceDominoFromDrag(tile, BoardSide.Right);
     }
 
-    /// <summary>
     /// Mengambil tile domino dari data drag-drop.
-    /// </summary>
     private static bool TryGetTileFromDrag(DragEventArgs e, out DominoTileViewModel tile)
     {
         tile = null!;
@@ -299,9 +267,7 @@ public partial class GameView : UserControl
         return tile is not null;
     }
 
-    /// <summary>
     /// Memperbarui posisi adorner dan efek drag saat drag-over di view.
-    /// </summary>
     private void GameView_PreviewDragOver(object sender, DragEventArgs e)
     {
         if (_dragAdorner is not null)
@@ -313,9 +279,7 @@ public partial class GameView : UserControl
         e.Effects = DragDropEffects.Move;
     }
 
-    /// <summary>
     /// Mencari parent visual terdekat dengan tipe tertentu.
-    /// </summary>
     private static T? FindAncestor<T>(DependencyObject child) where T : DependencyObject
     {
         DependencyObject current = child;
@@ -329,9 +293,7 @@ public partial class GameView : UserControl
         return null;
     }
 
-    /// <summary>
     /// Menyiapkan adorner drag untuk preview tile.
-    /// </summary>
     private void BeginDragAdorner(ContentPresenter presenter)
     {
         presenter.UpdateLayout();
@@ -348,9 +310,7 @@ public partial class GameView : UserControl
         _dragAdornerLayer.Add(_dragAdorner);
     }
 
-    /// <summary>
     /// Membersihkan adorner drag setelah drag selesai.
-    /// </summary>
     private void EndDragAdorner()
     {
         if (_dragAdornerLayer is not null && _dragAdorner is not null)
@@ -361,9 +321,7 @@ public partial class GameView : UserControl
         _draggedPresenter = null;
     }
 
-    /// <summary>
     /// Mengambil container ContentPresenter dari event source.
-    /// </summary>
     private static ContentPresenter? GetContainerFromEvent(ItemsControl itemsControl, DependencyObject? source)
     {
         if (source is null)
@@ -372,9 +330,7 @@ public partial class GameView : UserControl
         return ItemsControl.ContainerFromElement(itemsControl, source) as ContentPresenter;
     }
 
-    /// <summary>
     /// Mengambil ukuran presenter yang valid, fallback ke ukuran default bila perlu.
-    /// </summary>
     private static Size GetPresenterSize(FrameworkElement presenter)
     {
         var size = presenter.RenderSize;

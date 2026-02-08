@@ -27,6 +27,10 @@ public partial class GameView : UserControl
     private ContentPresenter? _draggedPresenter;
     // Presenter kandidat saat mouse down.
     private ContentPresenter? _dragCandidatePresenter;
+    // Visual clone untuk ghost agar terpisah dari elemen asli.
+    private UIElement? _dragVisualClone;
+    // Menandakan apakah presenter disembunyikan saat drag.
+    private bool _didHideDraggedPresenter;
 
     /// Inisialisasi GameView dan pasang handler Loaded.
     public GameView()
@@ -306,7 +310,11 @@ public partial class GameView : UserControl
             return;
 
         _draggedPresenter = presenter;
-        _dragAdorner = new DragAdorner(this, presenter, new Size(width, height));
+        _dragVisualClone = CreateDragVisualClone(presenter, width, height);
+        _draggedPresenter.Opacity = 0.0;
+        _didHideDraggedPresenter = true;
+
+        _dragAdorner = new DragAdorner(this, _dragVisualClone, new Size(width, height));
         _dragAdornerLayer.Add(_dragAdorner);
     }
 
@@ -316,9 +324,14 @@ public partial class GameView : UserControl
         if (_dragAdornerLayer is not null && _dragAdorner is not null)
             _dragAdornerLayer.Remove(_dragAdorner);
 
+        if (_draggedPresenter is not null && _didHideDraggedPresenter)
+            _draggedPresenter.Opacity = 1.0;
+
         _dragAdorner = null;
         _dragAdornerLayer = null;
         _draggedPresenter = null;
+        _dragVisualClone = null;
+        _didHideDraggedPresenter = false;
     }
 
     /// Mengambil container ContentPresenter dari event source.
@@ -345,5 +358,39 @@ public partial class GameView : UserControl
             size = new Size(DefaultTileWidth, DefaultTileHeight);
 
         return size;
+    }
+
+    /// Membuat visual clone untuk ghost agar tidak terpengaruh opacity elemen asli.
+    private UIElement CreateDragVisualClone(ContentPresenter presenter, int width, int height)
+    {
+        var content = presenter.Content ?? presenter.DataContext;
+        var template = presenter.ContentTemplate;
+
+        var handHorizontal = TryFindResource("HandTileTemplateHorizontal") as DataTemplate;
+        var handVertical = TryFindResource("HandTileTemplateVertical") as DataTemplate;
+        var ghostHorizontal = TryFindResource("HandTileGhostHorizontal") as DataTemplate;
+        var ghostVertical = TryFindResource("HandTileGhostVertical") as DataTemplate;
+
+        if (template is not null)
+        {
+            if (ReferenceEquals(template, handHorizontal) && ghostHorizontal is not null)
+                template = ghostHorizontal;
+            else if (ReferenceEquals(template, handVertical) && ghostVertical is not null)
+                template = ghostVertical;
+        }
+
+        var clone = new ContentPresenter
+        {
+            Content = content,
+            ContentTemplate = template,
+            ContentTemplateSelector = presenter.ContentTemplateSelector,
+            ContentStringFormat = presenter.ContentStringFormat,
+            DataContext = content,
+            Width = width > 0 ? width : DefaultTileWidth,
+            Height = height > 0 ? height : DefaultTileHeight
+        };
+        clone.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+        clone.Arrange(new Rect(0, 0, clone.Width, clone.Height));
+        return clone;
     }
 }

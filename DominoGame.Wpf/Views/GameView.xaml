@@ -42,6 +42,13 @@
             </DataTemplate.Triggers>
         </DataTemplate>
 
+        <!-- DataTemplate: ghost tile horizontal (selalu face-up). -->
+        <DataTemplate x:Key="HandTileGhostHorizontal">
+            <Grid Margin="3">
+                <ctrl:DominoTileControl/>
+            </Grid>
+        </DataTemplate>
+
         <!-- DataTemplate: tile tangan vertikal. -->
         <DataTemplate x:Key="HandTileTemplateVertical">
             <Grid x:Name="TileRoot" Margin="3">
@@ -75,6 +82,16 @@
                     <Setter TargetName="TileRoot" Property="Opacity" Value="0.5"/>
                 </DataTrigger>
             </DataTemplate.Triggers>
+        </DataTemplate>
+
+        <!-- DataTemplate: ghost tile vertikal (selalu face-up). -->
+        <DataTemplate x:Key="HandTileGhostVertical">
+            <Grid Margin="3">
+                <Grid.LayoutTransform>
+                    <RotateTransform Angle="90"/>
+                </Grid.LayoutTransform>
+                <ctrl:DominoTileControl/>
+            </Grid>
         </DataTemplate>
 
         <!-- DataTemplate: tangan pemain horizontal. -->

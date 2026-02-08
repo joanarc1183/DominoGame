@@ -20,7 +20,7 @@ public sealed class DragAdorner : Adorner
         _size = size;
         _brush = new VisualBrush(visual)
         {
-            Opacity = 0.85,
+            Opacity = 1.0,
             Stretch = Stretch.None,
             AlignmentX = AlignmentX.Left,
             AlignmentY = AlignmentY.Top

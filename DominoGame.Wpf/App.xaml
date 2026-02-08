@@ -3,7 +3,10 @@
 <Application x:Class="DominoGame.Wpf.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:DominoGame.Wpf">
+             xmlns:local="clr-namespace:DominoGame.Wpf"
+             xmlns:conv="clr-namespace:DominoGame.Wpf.Converters">
     <Application.Resources>
+        <!-- PipColorConverter: memetakan angka pip ke warna. -->
+        <conv:PipColorConverter x:Key="PipColorConverter"/>
     </Application.Resources>
 </Application>

@@ -24,8 +24,10 @@
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <!-- Ellipse: Width/Height ukuran pip, Fill warna pip. -->
-                        <Ellipse Width="6" Height="6" Fill="Black"/>
+                        <!-- Ellipse: Width/Height ukuran pip, Fill binding warna sesuai nilai pip kiri. -->
+                        <Ellipse Width="6"
+                                 Height="6"
+                                 Fill="{Binding DataContext.Left, RelativeSource={RelativeSource AncestorType=ItemsControl}, Converter={StaticResource PipColorConverter}}"/>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
@@ -41,8 +43,10 @@
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <!-- Ellipse: Width/Height ukuran pip, Fill warna pip. -->
-                        <Ellipse Width="6" Height="6" Fill="Black"/>
+                        <!-- Ellipse: Width/Height ukuran pip, Fill binding warna sesuai nilai pip kanan. -->
+                        <Ellipse Width="6"
+                                 Height="6"
+                                 Fill="{Binding DataContext.Right, RelativeSource={RelativeSource AncestorType=ItemsControl}, Converter={StaticResource PipColorConverter}}"/>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>

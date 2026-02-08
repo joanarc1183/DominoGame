@@ -6,7 +6,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Domino Setup"
         Width="480"
-        Height="480"
+        Height="550"
         WindowStartupLocation="CenterScreen"
         Background="#0E2E2F"
         ResizeMode="NoResize">
@@ -59,7 +59,8 @@
                         <!-- ComboBox: x:Name dipakai di code-behind, SelectedIndex default, Width lebar. -->
                         <ComboBox x:Name="ScoreTargetCombo"
                                   SelectedIndex="1"
-                                  Width="140">
+                                  Width="140"
+                                  Style="{StaticResource InputComboBoxStyle}">
                             <!-- ComboBoxItem: Content nilai opsi skor. -->
                             <ComboBoxItem Content="50"/>
                             <!-- ComboBoxItem: Content nilai opsi skor. -->
@@ -78,7 +79,8 @@
                         <!-- ComboBox: x:Name dipakai di code-behind, SelectedIndex default, Width lebar. -->
                         <ComboBox x:Name="PlayerCountCombo"
                                   SelectedIndex="0"
-                                  Width="140">
+                                  Width="140"
+                                  Style="{StaticResource InputComboBoxStyle}">
                             <!-- ComboBoxItem: Content nilai opsi jumlah pemain. -->
                             <ComboBoxItem Content="2"/>
                             <!-- ComboBoxItem: Content nilai opsi jumlah pemain. -->
@@ -104,13 +106,17 @@
             <!-- Button: Content label, Width lebar, Margin jarak kanan, Padding ruang dalam, Click handler batal. -->
             <Button Content="Cancel"
                     Width="90"
+                    Height="44"
                     Margin="0,0,8,0"
                     Padding="10,6"
+                    Style="{StaticResource DangerButtonStyle}"
                     Click="Cancel_Click"/>
             <!-- Button: Content label, Width lebar, Padding ruang dalam, Click handler mulai game. -->
             <Button Content="Start Game"
                     Width="120"
+                    Height="44"
                     Padding="10,6"
+                    Style="{StaticResource PrimaryButtonStyle}"
                     Click="Start_Click"/>
         </StackPanel>
     </Grid>

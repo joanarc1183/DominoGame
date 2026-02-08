@@ -76,11 +76,13 @@
                             Width="120"
                             Height="38"
                             Margin="0,0,10,0"
+                            Style="{StaticResource PrimaryButtonStyle}"
                             Click="PlayAgain_Click"/>
                     <!-- Button: kembali ke menu, Click handler BackToMenu_Click. -->
                     <Button Content="Kembali ke Menu"
                             Width="160"
                             Height="38"
+                            Style="{StaticResource SecondaryButtonStyle}"
                             Click="BackToMenu_Click"/>
                 </StackPanel>
             </StackPanel>

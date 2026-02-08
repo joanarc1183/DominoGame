@@ -30,10 +30,12 @@
                 <Button Content="Start Game"
                         Height="42"
                         Margin="0,0,0,10"
+                        Style="{StaticResource PrimaryButtonStyle}"
                         Click="Start_Click"/>
                 <!-- Button: keluar aplikasi, Click handler Exit_Click. -->
                 <Button Content="Exit"
                         Height="42"
+                        Style="{StaticResource DangerButtonStyle}"
                         Click="Exit_Click"/>
             </StackPanel>
         </Border>

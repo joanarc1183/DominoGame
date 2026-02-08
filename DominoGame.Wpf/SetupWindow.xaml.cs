@@ -59,8 +59,11 @@ public partial class SetupWindow : Window
             {
                 Margin = new Thickness(0, 0, 0, 8),
                 Padding = new Thickness(8),
+                MinHeight = 32,
                 Text = $"Player {i}"
             };
+            if (Application.Current.TryFindResource("InputTextBoxStyle") is Style style)
+                box.Style = style;
             PlayersPanel.Children.Add(box);
         }
     }

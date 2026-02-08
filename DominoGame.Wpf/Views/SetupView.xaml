@@ -53,7 +53,8 @@
                         <!-- ComboBox: x:Name dipakai code-behind. -->
                         <ComboBox x:Name="ScoreTargetCombo"
                                   SelectedIndex="1"
-                                  Width="140">
+                                  Width="140"
+                                  Style="{StaticResource InputComboBoxStyle}">
                             <ComboBoxItem Content="50"/>
                             <ComboBoxItem Content="100"/>
                             <ComboBoxItem Content="150"/>
@@ -69,7 +70,8 @@
                         <!-- ComboBox: x:Name dipakai code-behind. -->
                         <ComboBox x:Name="PlayerCountCombo"
                                   SelectedIndex="0"
-                                  Width="140">
+                                  Width="140"
+                                  Style="{StaticResource InputComboBoxStyle}">
                             <ComboBoxItem Content="2"/>
                             <ComboBoxItem Content="3"/>
                             <ComboBoxItem Content="4"/>
@@ -92,13 +94,17 @@
             <!-- Button: batalkan setup. -->
             <Button Content="Cancel"
                     Width="90"
+                    Height="44"
                     Margin="0,0,8,0"
                     Padding="10,6"
+                    Style="{StaticResource DangerButtonStyle}"
                     Click="Cancel_Click"/>
             <!-- Button: mulai game. -->
             <Button Content="Start Game"
                     Width="120"
+                    Height="44"
                     Padding="10,6"
+                    Style="{StaticResource PrimaryButtonStyle}"
                     Click="Start_Click"/>
         </StackPanel>
     </Grid>

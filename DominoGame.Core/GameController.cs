@@ -6,40 +6,62 @@ using System.Linq;
 public class GameController
 {
     // ================= EVENTS =================
+    // Dipicu saat giliran pemain berubah.
     public event Action<Player>? OnTurnChanged;
+    // Dipicu saat domino berhasil ditempatkan.
     public event Action<Player, Domino, BoardSide>? OnDominoPlaced;
+    // Dipicu saat pemain memilih pass.
     public event Action<Player>? OnPlayerPassed;
+    // Dipicu saat ronde berakhir: winner (null jika seri), isBlocked, snapshot tangan semua pemain.
     public event Action<
         Player?,                 // winner (null kalau tie)
         bool,                    // isBlocked
         IReadOnlyDictionary<Player, IReadOnlyList<Domino>>
     >? OnRoundEnded;
+    // Dipicu saat game berakhir dan pemenang ditentukan.
     public event Action<Player>? OnGameEnded;
 
     // ================= FIELDS =================
+    // Daftar pemain dalam game.
     private readonly List<Player> _players;
+    // Tangan domino setiap pemain.
     private readonly Dictionary<Player, List<Domino>> _dominoInHands;
+    // Board tempat domino ditaruh.
     private readonly IBoard _board;
+    // Boneyard sebagai sumber pengambilan domino.
     private Boneyard _boneyard;
 
+    // Indeks pemain yang sedang mendapat giliran.
     private int _currentPlayerIndex;
     // private int _roundLeaderIndex = -1;
+    // Jumlah pass berturut-turut (untuk mendeteksi buntu).
     private int _consecutivePasses;
+    // Status apakah ronde sudah selesai.
     private bool _roundEnded;
+    // Status apakah game sudah selesai.
     private bool _isGameEnded;
+    // Pemenang game (jika sudah ada).
     private Player? _gameWinner;
+    // Skor target untuk menang.
     private readonly int _maxScoreToWin;
 
     // ================= PROPERTIES =================
+    // Daftar pemain (read-only).
     public IReadOnlyList<Player> Players => _players;
+    // Pemain yang sedang mendapat giliran.
     public Player CurrentPlayer => _players[_currentPlayerIndex];
+    // Board yang dipakai game.
     public IBoard Board => _board;
+    // Status ronde selesai.
     public bool IsRoundEnded => _roundEnded;
+    // Status game selesai.
     public bool IsGameEnded => _isGameEnded;
+    // Pemenang game (null jika belum ada).
     public Player? GameWinner => _gameWinner;
     // public IEnumerable<Player> Players => _players;
 
     // ================= CONSTRUCTOR =================
+    // Membuat controller game dengan daftar pemain, board, dan target skor.
     public GameController(List<Player> players, IBoard board, int maxScoreToWin)
     {
         _players = players;
@@ -51,6 +73,7 @@ public class GameController
 
     // ================= GAME FLOW =================
 
+    // Memulai ronde baru: reset, bagi kartu, dan set giliran pertama.
     public void StartRound()
     {
         ResetRound();
@@ -59,6 +82,7 @@ public class GameController
         OnTurnChanged?.Invoke(CurrentPlayer);
     }
 
+    // Pindah ke giliran berikutnya, termasuk handle pass dan cek akhir ronde.
     public void NextTurn()
     {
         if (_roundEnded || _isGameEnded) return;
@@ -80,9 +104,11 @@ public class GameController
     }
 
     // ================= PLAYER ACTIONS =================
+    // Mengambil daftar domino di tangan pemain (read-only).
     public IReadOnlyList<Domino> GetHands(Player player)
         => _dominoInHands[player].AsReadOnly();
 
+    // Memainkan domino pada sisi tertentu.
     public bool PlayDomino(Player player, Domino domino, BoardSide side)
     {
         if (player != CurrentPlayer)
@@ -101,6 +127,7 @@ public class GameController
         return true;
     }
 
+    // Melakukan pass untuk pemain saat ini.
     public bool PassTurn(Player player)
     {
         if (player != CurrentPlayer)
@@ -112,6 +139,7 @@ public class GameController
         return true;
     }
 
+    // Mengecek apakah pemain bisa bermain pada giliran ini.
     public bool CanPlay(Player player)
     {
         if (_board.IsEmpty)
@@ -123,7 +151,7 @@ public class GameController
                 _board.CanPlace(d, BoardSide.Right));
     }
 
-
+    // Menjumlahkan total pip dari semua domino di tangan pemain.
     public int CountPips(Player player)
     {
         return _dominoInHands[player]
@@ -131,6 +159,7 @@ public class GameController
     }
 
     // ================= ROUND END =================
+    // Mengecek apakah ronde berakhir karena ada yang habis kartu atau buntu.
     private void CheckRoundEnd()
     {
         // Normal win
@@ -151,6 +180,7 @@ public class GameController
         }
     }
 
+    // Menang normal: pemain habis kartu, dapat skor dari sisa pip lawan.
     private void HandleNormalWin(Player winner)
     {
         int score = _players
@@ -163,6 +193,7 @@ public class GameController
         CheckGameEnd();
     }
 
+    // Menang karena buntu: pemain dengan total pip terendah menang, atau seri jika imbang.
     private void HandleBlockedGame()
     {
         var pipTotals = _players.ToDictionary(p => p, CountPips);
@@ -187,6 +218,7 @@ public class GameController
     }
 
     // ================= GAME END =================
+    // Mengecek apakah ada pemain yang mencapai target skor.
     private void CheckGameEnd()
     {
         _gameWinner = _players.FirstOrDefault(p => p.Score >= _maxScoreToWin);
@@ -198,6 +230,7 @@ public class GameController
     }
 
     // ================= INTERNAL HELPERS =================
+    // Reset state ronde: board kosong, boneyard baru, pass reset, tangan dikosongkan.
     private void ResetRound()
     {
         _board.Reset();
@@ -210,12 +243,14 @@ public class GameController
 
     }
 
+    // Membagikan 7 domino ke setiap pemain.
     private void DealInitialHands()
     {
         for (int i = 0; i < 7; i++)
             foreach (var p in _players)
                 _dominoInHands[p].Add(_boneyard.Draw());
     }
+    // Membuat set domino lengkap 0-0 sampai 6-6.
     private IEnumerable<Domino> GenerateFullSet()
     {
         for (int i = 0; i <= 6; i++)
@@ -223,6 +258,7 @@ public class GameController
                 yield return new Domino((Dot)i, (Dot)j);
     }
 
+    // Membuat snapshot tangan semua pemain agar aman dipakai di event.
     private IReadOnlyDictionary<Player, IReadOnlyList<Domino>> SnapshotHands()
     {
         return _dominoInHands.ToDictionary(

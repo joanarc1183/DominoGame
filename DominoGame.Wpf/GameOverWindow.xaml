@@ -9,6 +9,7 @@
         Height="520"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
+        Icon="Assets/Images/Logo.png"
         Background="#0E2E2F">
     <!-- Grid: container utama layout. -->
     <Grid>

@@ -24,11 +24,12 @@ public partial class MainWindow : Window
     /// Handler saat ronde selesai: tampilkan pesan info.
     private void HandleRoundEnded(string message)
     {
-        MessageBox.Show(
-            message,
-            "Ronde Selesai",
-            MessageBoxButton.OK,
-            MessageBoxImage.Information);
+        var roundWinner = new RoundWinnerWindow(message)
+        {
+            Owner = this
+        };
+
+        roundWinner.ShowDialog();
     }
 
     /// Handler saat game selesai: tampilkan dialog game over.

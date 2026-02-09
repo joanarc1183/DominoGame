@@ -386,7 +386,7 @@ public class GameViewModel : INotifyPropertyChanged
         {
             int pointsBefore = _scoreSnapshot.TryGetValue(winner, out var prev) ? prev : winner.Score;
             int gained = winner.Score - pointsBefore;
-            message = $"{winner.Name} menang ronde dan mendapat {gained} poin.";
+            message = $"{winner.Name} won the round and earned {gained} points.";
         }
 
         StatusMessage = message;

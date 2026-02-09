@@ -6,6 +6,7 @@
         Height="220"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
+        Icon="Assets/Images/Logo.png"
         Background="#0E2E2F">
     <Border Margin="16"
             Background="#123B3D"

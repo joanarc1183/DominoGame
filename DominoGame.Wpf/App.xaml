@@ -6,6 +6,11 @@
              xmlns:local="clr-namespace:DominoGame.Wpf"
              xmlns:conv="clr-namespace:DominoGame.Wpf.Converters">
     <Application.Resources>
+        <!-- Default window icon -->
+        <Style TargetType="Window">
+            <Setter Property="Icon" Value="Assets/Images/Logo.png"/>
+        </Style>
+
         <!-- PipColorConverter: memetakan angka pip ke warna. -->
         <conv:PipColorConverter x:Key="PipColorConverter"/>
 

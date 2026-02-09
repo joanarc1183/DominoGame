@@ -8,6 +8,7 @@
         Width="520"
         Height="550"
         WindowStartupLocation="CenterScreen"
+        Icon="Assets/Images/Logo.png"
         Background="#0E2E2F"
         ResizeMode="NoResize">
 
@@ -30,7 +31,7 @@
                        FontSize="22"
                        FontWeight="Bold"/>
             <!-- TextBlock: Text deskripsi, Foreground warna, Margin jarak atas. -->
-            <TextBlock Text="Pilih target skor dan jumlah pemain, kemudian isi nama pemain."
+            <TextBlock Text="Select the target score and number of players, then fill in the player's name."
                        Foreground="#CDE5E3"
                        Margin="0,6,0,0"/>
         </StackPanel>
@@ -53,7 +54,7 @@
                     <!-- StackPanel: Margin memberi jarak kanan untuk kolom kiri. -->
                     <StackPanel Margin="0,0,8,0">
                         <!-- TextBlock: Text label, Foreground warna, Margin jarak bawah. -->
-                        <TextBlock Text="Target skor"
+                        <TextBlock Text="Target Score"
                                    Foreground="#DFF3F1"
                                    Margin="0,0,0,6"/>
                         <!-- ComboBox: x:Name dipakai di code-behind, SelectedIndex default, Width lebar. -->
@@ -73,7 +74,7 @@
                     <!-- StackPanel: Grid.Column menempatkan di kolom kanan, Margin memberi jarak kiri. -->
                     <StackPanel Grid.Column="1" Margin="8,0,0,0">
                         <!-- TextBlock: Text label, Foreground warna, Margin jarak bawah. -->
-                        <TextBlock Text="Jumlah pemain"
+                        <TextBlock Text="Number of Players"
                                    Foreground="#DFF3F1"
                                    Margin="0,0,0,6"/>
                         <!-- ComboBox: x:Name dipakai di code-behind, SelectedIndex default, Width lebar. -->
@@ -92,7 +93,7 @@
                 </Grid>
 
                 <!-- TextBlock: Text label, Foreground warna, Margin jarak bawah. -->
-                <TextBlock Text="Nama pemain"
+                <TextBlock Text="The Player's Name"
                            Foreground="#DFF3F1"
                            Margin="0,0,0,6"/>
 

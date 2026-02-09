@@ -1,0 +1,47 @@
+<!-- Window: dialog pemenang ronde, gaya mengikuti GameOver. -->
+<Window x:Class="DominoGame.Wpf.RoundWinnerWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Ronde Selesai"
+        Width="520"
+        Height="320"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        Icon="Assets/Images/Logo.png"
+        Background="#0E2E2F">
+    <Grid>
+        <Border Width="440"
+                Padding="24"
+                Background="#123B3D"
+                CornerRadius="16"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center">
+            <StackPanel>
+                <TextBlock Text="Round Completed"
+                           Foreground="#F1F7F6"
+                           FontSize="24"
+                           FontWeight="Bold"
+                           HorizontalAlignment="Center"/>
+                <TextBlock Text="{Binding Message}"
+                           Foreground="#F2D06B"
+                           FontSize="16"
+                           Margin="0,10,0,18"
+                           TextWrapping="Wrap"
+                           TextAlignment="Center"
+                           HorizontalAlignment="Center"/>
+                <TextBlock Text="Press OK to proceed to the next round."
+                            Foreground="#DFF3F1"
+                            TextAlignment="Center"
+                            TextWrapping="Wrap"/>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,18,0,0">
+                    <Button Content="OK"
+                            Width="120"
+                            Height="38"
+                            Style="{StaticResource PrimaryButtonStyle}"
+                            Click="Ok_Click"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

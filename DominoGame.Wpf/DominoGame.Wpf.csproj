@@ -5,6 +5,8 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Assets\Images\Board.png" />
+    <Resource Include="Assets\Images\Domino.png" />
+    <Resource Include="Assets\Images\Logo.png" />
     <Content Include="Assets\Sounds\Button.mp3">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

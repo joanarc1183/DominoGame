@@ -4,7 +4,7 @@
 <Window x:Class="DominoGame.Wpf.StartMenuWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Domino Game"
+        Title="Domino Block Game"
         Width="520"
         Height="420"
         WindowStartupLocation="CenterScreen"
@@ -21,13 +21,13 @@
                 VerticalAlignment="Center">
             <StackPanel>
                 <!-- TextBlock: judul aplikasi. -->
-                <TextBlock Text="Domino Game"
+                <TextBlock Text="Domino Block Game"
                            Foreground="#F1F7F6"
                            FontSize="28"
                            FontWeight="Bold"
                            HorizontalAlignment="Center"/>
                 <!-- TextBlock: deskripsi singkat. -->
-                <TextBlock Text="Mulai permainan atau atur pemain dulu."
+                <TextBlock Text="Free Dominoes game. Let's Play!"
                            Foreground="#CDE5E3"
                            Margin="0,8,0,20"
                            HorizontalAlignment="Center"/>

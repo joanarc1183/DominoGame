@@ -3,6 +3,10 @@
   <ItemGroup>
     <ProjectReference Include="..\DominoGame.Core\DominoGame.Core.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Assets\Images\Board.png" />
+  </ItemGroup>
+
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>

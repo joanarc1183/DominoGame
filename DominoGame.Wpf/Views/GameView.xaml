@@ -219,83 +219,95 @@
                 <!-- Border: area board. -->
                 <Border Grid.Row="1"
                         Grid.Column="1"
-                        Background="#1B4F52"
+                        Background="#184B4E"
                         CornerRadius="12"
                         Padding="12"
                         Margin="10">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
-                        </Grid.RowDefinitions>
+                    <!-- Grid: area board untuk ItemsControl dan drop zones. -->
+                    <Grid x:Name="BoardArea"
+                          Width="835"
+                          Height="400">
+                        <Grid.Style>
+                            <Style TargetType="Grid">
+                                <Setter Property="Width" Value="835"/>
+                                <Setter Property="Height" Value="400"/>
+                                <Style.Triggers>
+                                    <!-- 2 pemain: tidak ada kiri/kanan, kecilkan tinggi agar tidak kepotong bawah. -->
+                                    <MultiDataTrigger>
+                                        <MultiDataTrigger.Conditions>
+                                            <Condition Binding="{Binding LeftPlayer}" Value="{x:Null}"/>
+                                            <Condition Binding="{Binding RightPlayer}" Value="{x:Null}"/>
+                                        </MultiDataTrigger.Conditions>
+                                        <Setter Property="Height" Value="340"/>
+                                    </MultiDataTrigger>
+                                    <!-- 3 pemain: tidak ada atas, kecilkan lebar agar tidak kepotong kanan. -->
+                                    <DataTrigger Binding="{Binding TopPlayer}" Value="{x:Null}">
+                                        <Setter Property="Width" Value="780"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Grid.Style>
 
-                        <!-- TextBlock: label board. -->
-                        <TextBlock Text="Board"
-                                   Foreground="#DFF3F1"
-                                   FontWeight="Bold"
-                                   Margin="0,0,0,10"/>
+                        <!-- Image: background board. -->
+                        <Image Source="pack://application:,,,/Assets/Images/Board.png"
+                               Stretch="UniformToFill"
+                               Opacity="1"
+                               Panel.ZIndex="0"/>
 
-                        <Grid Grid.Row="1"
-                              HorizontalAlignment="Center"
-                              VerticalAlignment="Center">
-                            <!-- Grid: area board untuk ItemsControl dan drop zones. -->
-                            <Grid x:Name="BoardArea"
-                                  Width="835"
-                                  Height="400">
-                                <!-- ItemsControl: domino di board. -->
-                                <ItemsControl x:Name="BoardItems"
-                                              ItemsSource="{Binding BoardDominoes}"
-                                              HorizontalAlignment="Center"
-                                              VerticalAlignment="Center">
-                                    <ItemsControl.ItemsPanel>
-                                        <ItemsPanelTemplate>
-                                            <ctrl:OShapePanel Padding="16" ItemSpacing="3"/>
-                                        </ItemsPanelTemplate>
-                                    </ItemsControl.ItemsPanel>
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <ctrl:DominoTileControl/>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-
-                                <!-- Canvas: overlay untuk drop zones kiri/kanan. -->
-                                <Canvas x:Name="BoardOverlay"
-                                        Panel.ZIndex="2">
-                                    <!-- Border: drop zone kiri. -->
-                                    <Border x:Name="DropLeftZone"
-                                            Width="35"
-                                            Height="70"
-                                            Background="#123B3D"
-                                            CornerRadius="8"
-                                            Opacity="0.9"
-                                            AllowDrop="True"
-                                            DragOver="DropZone_DragOver"
-                                            Drop="DropLeftZone_Drop">
-                                        <TextBlock Text="Left"
-                                                   Foreground="#CDE5E3"
-                                                   FontSize="11"
-                                                   HorizontalAlignment="Center"
-                                                   VerticalAlignment="Center"/>
-                                    </Border>
-                                    <!-- Border: drop zone kanan. -->
-                                    <Border x:Name="DropRightZone"
-                                            Width="35"
-                                            Height="70"
-                                            Background="#123B3D"
-                                            CornerRadius="8"
-                                            Opacity="0.9"
-                                            AllowDrop="True"
-                                            DragOver="DropZone_DragOver"
-                                            Drop="DropRightZone_Drop">
-                                        <TextBlock Text="Right"
-                                                   Foreground="#CDE5E3"
-                                                   FontSize="11"
-                                                   HorizontalAlignment="Center"
-                                                   VerticalAlignment="Center"/>
-                                    </Border>
-                                </Canvas>
-                            </Grid>
+                        <!-- Grid: area permainan di atas meja (padding dari tepi). -->
+                        <Grid Margin="24" Panel.ZIndex="1">
+                            <!-- ItemsControl: domino di board. -->
+                            <ItemsControl x:Name="BoardItems"
+                                          ItemsSource="{Binding BoardDominoes}"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <ctrl:OShapePanel Padding="16" ItemSpacing="3"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <ctrl:DominoTileControl/>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <!-- Canvas: overlay untuk drop zones kiri/kanan. -->
+                            <Canvas x:Name="BoardOverlay"
+                                    Panel.ZIndex="2">
+                                <!-- Border: drop zone kiri. -->
+                                <Border x:Name="DropLeftZone"
+                                        Width="35"
+                                        Height="70"
+                                        Background="#123B3D"
+                                        CornerRadius="8"
+                                        Opacity="0.9"
+                                        AllowDrop="True"
+                                        DragOver="DropZone_DragOver"
+                                        Drop="DropLeftZone_Drop">
+                                    <TextBlock Text="Left"
+                                               Foreground="#CDE5E3"
+                                               FontSize="11"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"/>
+                                </Border>
+                                <!-- Border: drop zone kanan. -->
+                                <Border x:Name="DropRightZone"
+                                        Width="35"
+                                        Height="70"
+                                        Background="#123B3D"
+                                        CornerRadius="8"
+                                        Opacity="0.9"
+                                        AllowDrop="True"
+                                        DragOver="DropZone_DragOver"
+                                        Drop="DropRightZone_Drop">
+                                    <TextBlock Text="Right"
+                                               Foreground="#CDE5E3"
+                                               FontSize="11"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"/>
+                                </Border>
+                            </Canvas>
                         </Grid>
                     </Grid>
                 </Border>

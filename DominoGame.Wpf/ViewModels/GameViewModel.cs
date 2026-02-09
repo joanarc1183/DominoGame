@@ -5,6 +5,7 @@ using System.Linq;
 using System.Windows.Input;
 using DominoGame.Core;
 using DominoGame.Wpf.Commands;
+using DominoGame.Wpf.Services;
 using DominoGame.Wpf.ViewModels;
 
 namespace DominoGame.Wpf;
@@ -355,6 +356,7 @@ public class GameViewModel : INotifyPropertyChanged
     {
         StatusMessage = $"{player.Name} menaruh {domino} di {side}.";
         RefreshBoard();
+        UiSoundService.PlayDominoPlaced();
     }
 
     /// Handler saat pemain pass.

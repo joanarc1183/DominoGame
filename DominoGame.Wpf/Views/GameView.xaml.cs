@@ -4,6 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Linq;
 using DominoGame.Core;
 using DominoGame.Wpf.Controls;
 using DominoGame.Wpf.ViewModels;
@@ -281,6 +282,50 @@ public partial class GameView : UserControl
             return;
 
         e.Effects = DragDropEffects.Move;
+    }
+
+    private void Pause_Click(object sender, RoutedEventArgs e)
+    {
+        var owner = Window.GetWindow(this);
+        var pause = new PauseWindow { Owner = owner };
+        bool? resume = pause.ShowDialog();
+        if (resume == true)
+            return;
+
+        if (_viewModel is null)
+            return;
+
+        var players = _viewModel.Players;
+        int maxScore = players.Max(p => p.Score);
+        var topPlayers = players.Where(p => p.Score == maxScore).ToList();
+        string winnerName = topPlayers.Count > 1
+            ? "Seri"
+            : $"{topPlayers[0].Name} ({topPlayers[0].Score})";
+
+        var gameOver = new GameOverWindow(players, winnerName)
+        {
+            Owner = owner
+        };
+
+        bool? playAgain = gameOver.ShowDialog();
+        if (playAgain == true)
+        {
+            var setup = new SetupWindow { Owner = owner };
+            if (setup.ShowDialog() == true)
+            {
+                var gameVm = new GameViewModel(setup.Players, setup.MaxScoreToWin);
+                var window = new MainWindow(gameVm);
+                Application.Current.MainWindow = window;
+                window.Show();
+                owner?.Close();
+                return;
+            }
+        }
+
+        var start = new StartMenuWindow();
+        Application.Current.MainWindow = start;
+        start.Show();
+        owner?.Close();
     }
 
     /// Mencari parent visual terdekat dengan tipe tertentu.

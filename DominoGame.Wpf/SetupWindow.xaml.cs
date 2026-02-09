@@ -93,7 +93,7 @@ public partial class SetupWindow : Window
         Close();
     }
 
-    // Menutup dialog dengan hasil batal.
+    // Menutup dialog dengan hasil batal, kembali ke start menu.
     private void Cancel_Click(object sender, RoutedEventArgs e)
     {
         // Beri sinyal pembatalan ke pemanggil.

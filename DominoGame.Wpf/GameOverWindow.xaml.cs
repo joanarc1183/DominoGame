@@ -20,10 +20,9 @@ public partial class GameOverWindow : Window
         Close();
     }
 
-    /// Handler tombol Kembali ke Menu: tutup dialog dengan hasil false.
-    private void BackToMenu_Click(object sender, RoutedEventArgs e)
+    /// Handler tombol Exit: keluar dari aplikasi.
+    private void Exit_Click(object sender, RoutedEventArgs e)
     {
-        DialogResult = false;
-        Close();
+        Application.Current.Shutdown();
     }
 }

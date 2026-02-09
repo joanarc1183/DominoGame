@@ -149,26 +149,42 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- TextBlock: pesan status. -->
-                <TextBlock Text="{Binding StatusMessage}"
+                <TextBlock Grid.Column="0"
+                           Text="{Binding StatusMessage}"
                            Foreground="#F1F7F6"
                            FontSize="14"
                            VerticalAlignment="Center"/>
 
                 <!-- StackPanel: info giliran dan skor. -->
-                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
                     <TextBlock Text="Turn:"
                                Foreground="#CDE5E3"
-                               Margin="0,0,6,0"/>
+                               Margin="0,0,6,0"
+                               VerticalAlignment="Center"/>
                     <TextBlock Text="{Binding CurrentPlayerName}"
                                Foreground="#F1F7F6"
                                FontWeight="Bold"
-                               Margin="0,0,12,0"/>
+                               Margin="0,0,12,0"
+                               VerticalAlignment="Center"/>
                     <TextBlock Text="Score:"
                                Foreground="#CDE5E3"
-                               Margin="0,0,6,0"/>
+                               Margin="0,0,6,0"
+                               VerticalAlignment="Center"/>
                     <TextBlock Text="{Binding CurrentPlayerScore}"
                                Foreground="#F1F7F6"
-                               FontWeight="Bold"/>
+                               FontWeight="Bold"
+                               VerticalAlignment="Center"/>
+                    <Button Width="36"
+                            Height="28"
+                            Margin="14,0,0,0"
+                            ToolTip="Pause"
+                            Style="{StaticResource PrimaryButtonStyle}"
+                            Click="Pause_Click">
+                        <Grid>
+                            <Rectangle Width="4" Height="14" Fill="#F1F7F6" RadiusX="1" RadiusY="1" HorizontalAlignment="Left" Margin="8,0,0,0"/>
+                            <Rectangle Width="4" Height="14" Fill="#F1F7F6" RadiusX="1" RadiusY="1" HorizontalAlignment="Right" Margin="0,0,8,0"/>
+                        </Grid>
+                    </Button>
                 </StackPanel>
             </Grid>
         </Border>

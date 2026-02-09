@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace DominoGame.Core
 {
-    public sealed class Domino
+    public sealed class Domino : IDomino
     {
         /// Nilai pip di sisi kiri domino.
         public Dot LeftPip { get; private set; }

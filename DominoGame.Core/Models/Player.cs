@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace DominoGame.Core;
 
-public class Player
+public class Player : IPlayer
 {
     /// Nama pemain.
     public string Name { get; }

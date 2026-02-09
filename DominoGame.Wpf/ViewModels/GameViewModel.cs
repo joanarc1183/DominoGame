@@ -14,9 +14,9 @@ public class GameViewModel : INotifyPropertyChanged
     // Mesin game utama yang memegang aturan dan state ronde/game.
     private readonly GameController _game;
     // Lookup cepat dari model Player ke view model skor.
-    private readonly Dictionary<Player, PlayerScoreViewModel> _playerLookup = new();
+    private readonly Dictionary<IPlayer, PlayerScoreViewModel> _playerLookup = new();
     // Snapshot skor sebelumnya untuk menghitung poin yang didapat per ronde.
-    private readonly Dictionary<Player, int> _scoreSnapshot = new();
+    private readonly Dictionary<IPlayer, int> _scoreSnapshot = new();
     // Domino yang sedang dipilih oleh pemain saat ini.
     private DominoTileViewModel? _selectedDomino;
     // Pesan status yang tampil di UI.
@@ -43,7 +43,7 @@ public class GameViewModel : INotifyPropertyChanged
     public PlayerScoreViewModel? RightPlayer { get; private set; }
 
     /// Event ketika game selesai (pemenang sudah ditentukan).
-    public event Action<Player>? GameEnded;
+    public event Action<IPlayer>? GameEnded;
     /// Event ketika ronde selesai (untuk menampilkan pesan).
     public event Action<string>? RoundEnded;
 
@@ -109,9 +109,10 @@ public class GameViewModel : INotifyPropertyChanged
     public RelayCommand<object> PassCommand { get; }
 
     /// Menyiapkan game baru, binding data, dan event listener.
-    public GameViewModel(List<Player> players, int maxScoreToWin)
+    public GameViewModel(IEnumerable<IPlayer> players, int maxScoreToWin)
     {
-        _game = new GameController(players, new Board(), maxScoreToWin);
+        var playerList = players.ToList();
+        _game = new GameController(playerList, new Board(), maxScoreToWin);
 
         foreach (var player in _game.Players)
         {
@@ -332,7 +333,7 @@ public class GameViewModel : INotifyPropertyChanged
     }
 
     /// Handler saat giliran pemain berubah.
-    private void HandleTurnChanged(Player player)
+    private void HandleTurnChanged(IPlayer player)
     {
         LoadAllHands();
         RefreshBoard();
@@ -350,14 +351,14 @@ public class GameViewModel : INotifyPropertyChanged
     }
 
     /// Handler saat pemain menaruh domino.
-    private void HandleDominoPlaced(Player player, Domino domino, BoardSide side)
+    private void HandleDominoPlaced(IPlayer player, IDomino domino, BoardSide side)
     {
         StatusMessage = $"{player.Name} menaruh {domino} di {side}.";
         RefreshBoard();
     }
 
     /// Handler saat pemain pass.
-    private void HandlePlayerPassed(Player player)
+    private void HandlePlayerPassed(IPlayer player)
     {
         _pendingPassMessage = true;
         _lastPassPlayerName = player.Name;
@@ -367,9 +368,9 @@ public class GameViewModel : INotifyPropertyChanged
 
     /// Handler saat ronde berakhir (menang, seri, atau buntu).
     private void HandleRoundEnded(
-        Player? winner,
+        IPlayer? winner,
         bool isBlocked,
-        IReadOnlyDictionary<Player, IReadOnlyList<Domino>> hands)
+        IReadOnlyDictionary<IPlayer, IReadOnlyList<IDomino>> hands)
     {
         string message;
 
@@ -399,7 +400,7 @@ public class GameViewModel : INotifyPropertyChanged
     }
 
     /// Handler saat game berakhir (pemenang final).
-    private void HandleGameEnded(Player winner)
+    private void HandleGameEnded(IPlayer winner)
     {
         StatusMessage = $"Game selesai! {winner.Name} menang.";
         UpdatePlayability();

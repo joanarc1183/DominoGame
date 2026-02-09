@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace DominoGame.Core;
 
-public class Boneyard
+public class Boneyard : IBoneyard
 {
     /// Daftar domino yang masih tersisa di boneyard.
     public List<Domino> Dominoes { get; private set; } = new();

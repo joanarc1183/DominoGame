@@ -32,7 +32,7 @@ public partial class MainWindow : Window
     }
 
     /// Handler saat game selesai: tampilkan dialog game over.
-    private void HandleGameEnded(Player winner)
+    private void HandleGameEnded(IPlayer winner)
     {
         var gameOver = new GameOverWindow(_viewModel.Players, winner.Name)
         {

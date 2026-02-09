@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using DominoGame.Core;
@@ -8,18 +9,18 @@ namespace DominoGame.Wpf.ViewModels;
 public class PlayerScoreViewModel : INotifyPropertyChanged
 {
     // Model pemain yang menjadi sumber data.
-    private readonly Player _player;
+    private readonly IPlayer _player;
     // Menandakan apakah pemain ini sedang mendapatkan giliran.
     private bool _isCurrent;
 
     /// Membuat view model skor dari model pemain.
-    public PlayerScoreViewModel(Player player)
+    public PlayerScoreViewModel(IPlayer player)
     {
         _player = player;
     }
 
     /// Model pemain asli.
-    public Player Player => _player;
+    public IPlayer Player => _player;
     /// Nama pemain untuk ditampilkan.
     public string Name => _player.Name;
     /// Skor pemain untuk ditampilkan.
@@ -46,11 +47,16 @@ public class PlayerScoreViewModel : INotifyPropertyChanged
     }
 
     /// Mengganti isi tangan pemain sesuai data terbaru.
-    public void RefreshHand(IEnumerable<Domino> dominoes)
+    public void RefreshHand(IEnumerable<IDomino> dominoes)
     {
         Hand.Clear();
         foreach (var domino in dominoes)
-            Hand.Add(new DominoTileViewModel(domino));
+        {
+            if (domino is Domino concrete)
+                Hand.Add(new DominoTileViewModel(concrete));
+            else
+                throw new InvalidOperationException("Domino implementation tidak dikenal.");
+        }
 
         OnPropertyChanged(nameof(Hand));
     }

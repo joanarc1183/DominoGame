@@ -121,6 +121,58 @@
                 </ItemsControl.ItemsPanel>
             </ItemsControl>
         </DataTemplate>
+
+        <!-- DataTemplate: slot pemain atas (nama di atas tangan). -->
+        <DataTemplate x:Key="TopPlayerSlotTemplate">
+            <StackPanel HorizontalAlignment="Center">
+                <TextBlock Text="{Binding Name}"
+                           Foreground="#F1F7F6"
+                           FontWeight="Bold"
+                           Margin="0,0,0,6"
+                           HorizontalAlignment="Center"/>
+                <ContentPresenter Content="{Binding}"
+                                  ContentTemplate="{StaticResource PlayerHandHorizontalTemplate}"/>
+            </StackPanel>
+        </DataTemplate>
+
+        <!-- DataTemplate: slot pemain bawah (nama di bawah tangan). -->
+        <DataTemplate x:Key="BottomPlayerSlotTemplate">
+            <StackPanel HorizontalAlignment="Center">
+                <ContentPresenter Content="{Binding}"
+                                  ContentTemplate="{StaticResource PlayerHandHorizontalTemplate}"/>
+                <TextBlock Text="{Binding Name}"
+                           Foreground="#F1F7F6"
+                           FontWeight="Bold"
+                           Margin="0,6,0,0"
+                           HorizontalAlignment="Center"/>
+            </StackPanel>
+        </DataTemplate>
+
+        <!-- DataTemplate: slot pemain kiri (nama di atas tangan). -->
+        <DataTemplate x:Key="LeftPlayerSlotTemplate">
+            <StackPanel HorizontalAlignment="Center">
+                <TextBlock Text="{Binding Name}"
+                           Foreground="#F1F7F6"
+                           FontWeight="Bold"
+                           Margin="0,0,0,6"
+                           HorizontalAlignment="Center"/>
+                <ContentPresenter Content="{Binding}"
+                                  ContentTemplate="{StaticResource PlayerHandVerticalTemplate}"/>
+            </StackPanel>
+        </DataTemplate>
+
+        <!-- DataTemplate: slot pemain kanan (nama di atas tangan). -->
+        <DataTemplate x:Key="RightPlayerSlotTemplate">
+            <StackPanel HorizontalAlignment="Center">
+                <TextBlock Text="{Binding Name}"
+                           Foreground="#F1F7F6"
+                           FontWeight="Bold"
+                           Margin="0,0,0,6"
+                           HorizontalAlignment="Center"/>
+                <ContentPresenter Content="{Binding}"
+                                  ContentTemplate="{StaticResource PlayerHandVerticalTemplate}"/>
+            </StackPanel>
+        </DataTemplate>
     </UserControl.Resources>
 
     <!-- AdornerDecorator: memungkinkan adorner untuk drag preview. -->
@@ -212,25 +264,25 @@
                 <ContentControl Grid.Row="0"
                                 Grid.Column="1"
                                 Content="{Binding TopPlayer}"
-                                ContentTemplate="{StaticResource PlayerHandHorizontalTemplate}"/>
+                                ContentTemplate="{StaticResource TopPlayerSlotTemplate}"/>
 
                 <!-- ContentControl: tangan pemain bawah. -->
                 <ContentControl Grid.Row="2"
                                 Grid.Column="1"
                                 Content="{Binding BottomPlayer}"
-                                ContentTemplate="{StaticResource PlayerHandHorizontalTemplate}"/>
+                                ContentTemplate="{StaticResource BottomPlayerSlotTemplate}"/>
 
                 <!-- ContentControl: tangan pemain kiri. -->
                 <ContentControl Grid.Row="1"
                                 Grid.Column="0"
                                 Content="{Binding LeftPlayer}"
-                                ContentTemplate="{StaticResource PlayerHandVerticalTemplate}"/>
+                                ContentTemplate="{StaticResource LeftPlayerSlotTemplate}"/>
 
                 <!-- ContentControl: tangan pemain kanan. -->
                 <ContentControl Grid.Row="1"
                                 Grid.Column="2"
                                 Content="{Binding RightPlayer}"
-                                ContentTemplate="{StaticResource PlayerHandVerticalTemplate}"/>
+                                ContentTemplate="{StaticResource RightPlayerSlotTemplate}"/>
 
                 <!-- Border: area board. -->
                 <Border Grid.Row="1"

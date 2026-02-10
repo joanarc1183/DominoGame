@@ -1,12 +1,11 @@
-<!-- UserControl: x:Class mengikat code-behind, xmlns/ xmlns:x untuk namespace XAML,
-     Background warna latar view. -->
+
 <UserControl x:Class="DominoGame.Wpf.Views.GameOverView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              Background="#0E2E2F">
-    <!-- Grid: container utama layout. -->
+    
     <Grid>
-        <!-- Border: panel utama game over. -->
+        
         <Border Width="620"
                 Padding="24"
                 Background="#123B3D"
@@ -14,43 +13,43 @@
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center">
             <StackPanel>
-                <!-- TextBlock: judul game over. -->
+                
                 <TextBlock Text="Game Over"
                            Foreground="#F1F7F6"
                            FontSize="26"
                            FontWeight="Bold"
                            HorizontalAlignment="Center"/>
-                <!-- TextBlock: binding nama pemenang. -->
+                
                 <TextBlock Text="{Binding WinnerName}"
                            Foreground="#F2D06B"
                            FontSize="18"
                            Margin="0,6,0,18"
                            HorizontalAlignment="Center"/>
 
-                <!-- Border: panel skor akhir. -->
+                
                 <Border Background="#184B4E" CornerRadius="10" Padding="12">
                     <StackPanel>
-                        <!-- TextBlock: label skor akhir. -->
+                        
                         <TextBlock Text="Skor Akhir"
                                    Foreground="#DFF3F1"
                                    FontWeight="Bold"
                                    Margin="0,0,0,8"/>
-                        <!-- ItemsControl: binding daftar pemain. -->
+                        
                         <ItemsControl ItemsSource="{Binding Players}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <!-- Grid: baris skor per pemain. -->
+                                    
                                     <Grid Margin="0,0,0,6">
                                         <Grid.ColumnDefinitions>
-                                            <!-- ColumnDefinition: nama pemain. -->
+                                            
                                             <ColumnDefinition Width="*"/>
-                                            <!-- ColumnDefinition: skor pemain. -->
+                                            
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
-                                        <!-- TextBlock: binding nama pemain. -->
+                                        
                                         <TextBlock Text="{Binding Name}"
                                                    Foreground="#F1F7F6"/>
-                                        <!-- TextBlock: binding skor pemain. -->
+                                        
                                         <TextBlock Grid.Column="1"
                                                    Text="{Binding Score}"
                                                    Foreground="#F2D06B"
@@ -62,16 +61,16 @@
                     </StackPanel>
                 </Border>
 
-                <!-- StackPanel: tombol aksi. -->
+                
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,18,0,0">
-                    <!-- Button: main lagi, Click handler PlayAgain_Click. -->
+                    
                     <Button Content="Main Lagi"
                             Width="120"
                             Height="38"
                             Margin="0,0,10,0"
                             Style="{StaticResource PrimaryButtonStyle}"
                             Click="PlayAgain_Click"/>
-                    <!-- Button: kembali ke menu, Click handler BackToMenu_Click. -->
+                    
                     <Button Content="Kembali ke Menu"
                             Width="160"
                             Height="38"
@@ -82,3 +81,4 @@
         </Border>
     </Grid>
 </UserControl>
+

@@ -1,11 +1,10 @@
-<!-- UserControl: x:Class mengikat code-behind, xmlns untuk namespace XAML, xmlns:x untuk markup XAML,
-     Width/Height mengatur ukuran tampilan domino sederhana. -->
+
 <UserControl x:Class="DominoGame.Wpf.Controls.DominoView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              Width="60" Height="30">
 
-    <!-- Border: BorderBrush/Thickness garis luar, CornerRadius sudut membulat, Background warna, Margin jarak luar. -->
+    
     <Border BorderBrush="Black"
             BorderThickness="2"
             CornerRadius="4"
@@ -17,12 +16,12 @@
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
 
-            <!-- TextBlock: Text binding nilai kiri, alignment center. -->
+            
             <TextBlock Text="{Binding Left}"
                        HorizontalAlignment="Center"
                        VerticalAlignment="Center"/>
 
-            <!-- TextBlock: Grid.Column menempatkan di kolom kanan, Text binding nilai kanan, alignment center. -->
+            
             <TextBlock Grid.Column="1"
                        Text="{Binding Right}"
                        HorizontalAlignment="Center"
@@ -30,3 +29,4 @@
         </Grid>
     </Border>
 </UserControl>
+

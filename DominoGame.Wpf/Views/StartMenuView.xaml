@@ -1,12 +1,11 @@
-<!-- UserControl: x:Class mengikat code-behind, xmlns/ xmlns:x untuk namespace XAML,
-     Background warna latar view. -->
+
 <UserControl x:Class="DominoGame.Wpf.Views.StartMenuView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              Background="#0E2E2F">
-    <!-- Grid: container utama layout. -->
+    
     <Grid>
-        <!-- Border: panel utama menu. -->
+        
         <Border Width="520"
                 Padding="26"
                 Background="#123B3D"
@@ -14,25 +13,25 @@
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center">
             <StackPanel>
-                <!-- TextBlock: judul aplikasi. -->
+                
                 <TextBlock Text="Domino Game"
                            Foreground="#F1F7F6"
                            FontSize="28"
                            FontWeight="Bold"
                            HorizontalAlignment="Center"/>
-                <!-- TextBlock: deskripsi singkat. -->
+                
                 <TextBlock Text="Mulai permainan atau atur pemain dulu."
                            Foreground="#CDE5E3"
                            Margin="0,8,0,20"
                            HorizontalAlignment="Center"/>
 
-                <!-- Button: mulai game, Click handler Start_Click. -->
+                
                 <Button Content="Start Game"
                         Height="42"
                         Margin="0,0,0,10"
                         Style="{StaticResource PrimaryButtonStyle}"
                         Click="Start_Click"/>
-                <!-- Button: keluar aplikasi, Click handler Exit_Click. -->
+                
                 <Button Content="Exit"
                         Height="42"
                         Style="{StaticResource DangerButtonStyle}"
@@ -41,3 +40,4 @@
         </Border>
     </Grid>
 </UserControl>
+

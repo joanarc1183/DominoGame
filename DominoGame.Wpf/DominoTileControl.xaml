@@ -1,11 +1,10 @@
-﻿<!-- UserControl: x:Class mengikat code-behind, xmlns untuk namespace XAML, xmlns:x untuk markup XAML,
-     Width/Height mengatur ukuran tile domino. -->
+
 <UserControl x:Class="DominoGame.Wpf.Controls.DominoTileControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              Width="35" Height="70">
 
-    <!-- Border: BorderThickness/Brush membentuk garis tile, Background warna tile, CornerRadius membulatkan sudut. -->
+    
     <Border BorderThickness="2" BorderBrush="Black" Background="White" CornerRadius="4">
         <Grid>
             <Grid.RowDefinitions>
@@ -13,18 +12,18 @@
                 <RowDefinition/>
             </Grid.RowDefinitions>
 
-            <!-- TOP -->
-            <!-- ItemsControl: ItemsSource mengikat pip sisi kiri. -->
+            
+            
             <ItemsControl ItemsSource="{Binding LeftPips}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <!-- UniformGrid: Rows/Columns mengatur layout pip 3x2. -->
+                        
                         <UniformGrid Rows="3" Columns="2"/>
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <!-- Ellipse: Width/Height ukuran pip, Fill binding warna sesuai nilai pip kiri. -->
+                        
                         <Ellipse Width="6"
                                  Height="6"
                                  Fill="{Binding DataContext.Left, RelativeSource={RelativeSource AncestorType=ItemsControl}, Converter={StaticResource PipColorConverter}}"/>
@@ -32,18 +31,18 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
 
-            <!-- BOTTOM -->
-            <!-- ItemsControl: Grid.Row menempatkan di baris bawah, ItemsSource mengikat pip sisi kanan. -->
+            
+            
             <ItemsControl Grid.Row="1" ItemsSource="{Binding RightPips}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <!-- UniformGrid: Rows/Columns mengatur layout pip 3x2. -->
+                        
                         <UniformGrid Rows="3" Columns="2"/>
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <!-- Ellipse: Width/Height ukuran pip, Fill binding warna sesuai nilai pip kanan. -->
+                        
                         <Ellipse Width="6"
                                  Height="6"
                                  Fill="{Binding DataContext.Right, RelativeSource={RelativeSource AncestorType=ItemsControl}, Converter={StaticResource PipColorConverter}}"/>
@@ -58,3 +57,4 @@
         </Grid>
     </Border>
 </UserControl>
+

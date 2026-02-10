@@ -87,7 +87,7 @@ public class GameController
     {
         if (_roundEnded || _isGameEnded) return;
 
-        IPlayer player = CurrentPlayer;
+        var player = CurrentPlayer;
 
         if (!CanPlay(player))
         {
@@ -145,9 +145,12 @@ public class GameController
     public bool CanPlay(IPlayer player)
     {
         if (_board.IsEmpty)
-            return _dominoInHands[player].Count > 0;
+        {
+            bool canPlay = _dominoInHands[player].Count > 0;
+            return canPlay;
+        }
 
-        return _dominoInHands[player]
+        bool hasPlayableDomino = _dominoInHands[player]
             .Any(d =>
             {
                 if (d is not Domino concrete)
@@ -155,13 +158,15 @@ public class GameController
                 return _board.CanPlace(concrete, BoardSide.Left) ||
                        _board.CanPlace(concrete, BoardSide.Right);
             });
+        return hasPlayableDomino;
     }
 
     // Menjumlahkan total pip dari semua domino di tangan pemain.
     public int CountPips(IPlayer player)
     {
-        return _dominoInHands[player]
+        int totalPips = _dominoInHands[player]
             .Sum(d => (int)d.LeftPip + (int)d.RightPip);
+        return totalPips;
     }
 
     // ================= ROUND END =================
@@ -169,7 +174,7 @@ public class GameController
     private void CheckRoundEnd()
     {
         // Normal win
-        IPlayer? emptyPlayer = _players.FirstOrDefault(p => _dominoInHands[p].Count == 0);
+        var emptyPlayer = _players.FirstOrDefault(p => _dominoInHands[p].Count == 0);
         
         if (emptyPlayer != null)
         {
@@ -202,10 +207,10 @@ public class GameController
     // Menang karena buntu: pemain dengan total pip terendah menang, atau seri jika imbang.
     private void HandleBlockedGame()
     {
-        Dictionary<IPlayer, int> pipTotals = _players.ToDictionary(p => p, CountPips);
+        var pipTotals = _players.ToDictionary(p => p, CountPips);
 
         int min = pipTotals.Min(x => x.Value);
-        List<KeyValuePair<IPlayer, int>> lowestPlayers = pipTotals.Where(x => x.Value == min).ToList();
+        var lowestPlayers = pipTotals.Where(x => x.Value == min).ToList();
 
         // Tie → no winner
         if (lowestPlayers.Count > 1)
@@ -214,7 +219,7 @@ public class GameController
             return;
         }
 
-        IPlayer winner = lowestPlayers.First().Key;
+        var winner = lowestPlayers.First().Key;
 
         int gain = pipTotals.Sum(x => x.Value) - pipTotals[winner];
         winner.Score += gain;
@@ -268,10 +273,11 @@ public class GameController
     // Membuat snapshot tangan semua pemain agar aman dipakai di event.
     private IReadOnlyDictionary<IPlayer, IReadOnlyList<IDomino>> SnapshotHands()
     {
-        return _dominoInHands.ToDictionary(
+        Dictionary<IPlayer, IReadOnlyList<IDomino>> snapshot = _dominoInHands.ToDictionary(
             kvp => kvp.Key,
             kvp => (IReadOnlyList<IDomino>)kvp.Value.AsReadOnly()
         );
+        return snapshot;
     }
 
 }

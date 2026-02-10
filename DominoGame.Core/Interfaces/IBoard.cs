@@ -10,12 +10,4 @@ public interface IBoard
     Dot LeftEnd { get; }
     /// Nilai pip di ujung kanan board.
     Dot RightEnd { get; }
-    /// Mengecek apakah domino bisa ditempatkan di sisi mana pun.
-    bool CanPlace(Domino domino);
-    /// Mengecek apakah domino bisa ditempatkan pada sisi tertentu.
-    bool CanPlace(Domino domino, BoardSide side);
-    /// Menaruh domino pada sisi tertentu.
-    void Place(Domino domino, BoardSide side);
-    /// Mengosongkan board.
-    void Reset();
 }

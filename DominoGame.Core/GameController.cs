@@ -117,10 +117,10 @@ public class GameController
         if (domino is not Domino concrete)
             throw new InvalidOperationException("Domino implementation tidak dikenal.");
 
-        if (!_board.CanPlace(concrete, side))
+        if (!CanPlace(concrete, side))
             return false;
 
-        _board.Place(concrete, side);
+        Place(concrete, side);
         _dominoInHands[player].Remove(domino);
         _consecutivePasses = 0;
 
@@ -144,19 +144,27 @@ public class GameController
     // Mengecek apakah pemain bisa bermain pada giliran ini.
     public bool CanPlay(IPlayer player)
     {
+        List<IDomino> hand = _dominoInHands[player];
+
+        foreach (IDomino d in hand)
+        {
+            if (d is not Domino)
+                throw new InvalidOperationException("Domino implementation tidak dikenal.");
+        }
+
         if (_board.IsEmpty)
         {
-            bool canPlay = _dominoInHands[player].Count > 0;
+            bool canPlay = hand.Count > 0;
             return canPlay;
         }
 
-        bool hasPlayableDomino = _dominoInHands[player]
+        bool hasPlayableDomino = hand
             .Any(d =>
             {
                 if (d is not Domino concrete)
                     throw new InvalidOperationException("Domino implementation tidak dikenal.");
-                return _board.CanPlace(concrete, BoardSide.Left) ||
-                       _board.CanPlace(concrete, BoardSide.Right);
+                return CanPlace(concrete, BoardSide.Left) ||
+                       CanPlace(concrete, BoardSide.Right);
             });
         return hasPlayableDomino;
     }
@@ -244,7 +252,7 @@ public class GameController
     // Reset state ronde: board kosong, boneyard baru, pass reset, tangan dikosongkan.
     private void ResetRound()
     {
-        _board.Reset();
+        ResetBoard();
         _boneyard = new Boneyard(GenerateFullSet());
         _consecutivePasses = 0;
         _roundEnded = false;
@@ -253,6 +261,47 @@ public class GameController
             _dominoInHands[p].Clear();
 
     }
+
+    // ================= BOARD LOGIC =================
+    // Mengecek apakah domino bisa ditempatkan pada sisi tertentu (kiri/kanan).
+    public bool CanPlace(Domino domino, BoardSide side)
+    {
+        if (_board.IsEmpty) return true;
+        return side == BoardSide.Left
+            ? domino.LeftPip == _board.LeftEnd || domino.RightPip == _board.LeftEnd
+            : domino.LeftPip == _board.RightEnd || domino.RightPip == _board.RightEnd;
+    }
+
+    // Menaruh domino pada sisi board yang dipilih, dengan flip bila diperlukan.
+    public void Place(Domino domino, BoardSide side)
+    {
+        if (!CanPlace(domino, side))
+            throw new InvalidOperationException("Invalid placement");
+
+        if (_board.IsEmpty)
+        {
+            _board.Dominoes.AddFirst(domino);
+            return;
+        }
+
+        if (side == BoardSide.Left)
+        {
+            if (domino.RightPip == _board.LeftEnd)
+                _board.Dominoes.AddFirst(domino);
+            else
+                _board.Dominoes.AddFirst(domino.Flip());
+        }
+        else
+        {
+            if (domino.LeftPip == _board.RightEnd)
+                _board.Dominoes.AddLast(domino);
+            else
+                _board.Dominoes.AddLast(domino.Flip());
+        }
+    }
+
+    // Mengosongkan board untuk memulai ronde baru.
+    public void ResetBoard() => _board.Dominoes.Clear();
 
     // Membagikan 7 domino ke setiap pemain.
     private void DealInitialHands()

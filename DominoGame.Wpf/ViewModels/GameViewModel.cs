@@ -84,13 +84,13 @@ public class GameViewModel : INotifyPropertyChanged
     public bool CanPlaceLeft => SelectedDomino is not null &&
         !_game.IsRoundEnded &&
         !_game.IsGameEnded &&
-        _game.Board.CanPlace(SelectedDomino.Domino, BoardSide.Left);
+        _game.CanPlace(SelectedDomino.Domino, BoardSide.Left);
 
     /// Menandakan apakah domino terpilih bisa ditempatkan di sisi kanan.
     public bool CanPlaceRight => SelectedDomino is not null &&
         !_game.IsRoundEnded &&
         !_game.IsGameEnded &&
-        _game.Board.CanPlace(SelectedDomino.Domino, BoardSide.Right);
+        _game.CanPlace(SelectedDomino.Domino, BoardSide.Right);
 
     /// Menandakan apakah pemain saat ini boleh pass.
     public bool CanPass => !_game.IsRoundEnded && !_game.IsGameEnded && !_game.CanPlay(_game.CurrentPlayer);
@@ -149,7 +149,7 @@ public class GameViewModel : INotifyPropertyChanged
         return tile is not null &&
                !_game.IsRoundEnded &&
                !_game.IsGameEnded &&
-               _game.Board.CanPlace(tile.Domino, side);
+               _game.CanPlace(tile.Domino, side);
     }
 
     /// Mencoba menaruh domino melalui aksi drag-drop dari UI.
@@ -235,7 +235,7 @@ public class GameViewModel : INotifyPropertyChanged
         if (SelectedDomino is null)
             return;
 
-        if (!_game.Board.CanPlace(SelectedDomino.Domino, side))
+        if (!_game.CanPlace(SelectedDomino.Domino, side))
         {
             StatusMessage = "Kartu tidak bisa ditempatkan di sisi itu.";
             return;
@@ -299,8 +299,8 @@ public class GameViewModel : INotifyPropertyChanged
             {
                 tile.IsPlayable = vm.IsCurrent &&
                                   canInteract &&
-                                  (_game.Board.CanPlace(tile.Domino, BoardSide.Left) ||
-                                   _game.Board.CanPlace(tile.Domino, BoardSide.Right));
+                                  (_game.CanPlace(tile.Domino, BoardSide.Left) ||
+                                   _game.CanPlace(tile.Domino, BoardSide.Right));
             }
         }
 

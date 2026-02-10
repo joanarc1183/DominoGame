@@ -15,7 +15,7 @@ public class GameControllerTests
     private Mock<IPlayer> _playerMock;
     private Mock<IPlayer> _otherPlayerMock;
     private Mock<IDomino> _dominoMock;
-    private Mock<IBoard> _boardMock;
+    private Board _board;
 
     private List<IPlayer> _players;
 
@@ -26,7 +26,7 @@ public class GameControllerTests
         _playerMock = new Mock<IPlayer>();
         _otherPlayerMock = new Mock<IPlayer>();
         _dominoMock = new Mock<IDomino>();
-        _boardMock = new Mock<IBoard>();
+        _board = new Board();
 
         _players = new List<IPlayer>
         {
@@ -34,7 +34,7 @@ public class GameControllerTests
             _otherPlayerMock.Object,
         };
         
-        _gameController = new GameController(_players, _boardMock.Object, 100);
+        _gameController = new GameController(_players, _board, 100);
     }
 
     [Test]
@@ -43,7 +43,7 @@ public class GameControllerTests
         _gameController.StartRound();
 
         Assert.That(_gameController.CurrentPlayer, Is.EqualTo(_playerMock.Object));
-        Assert.That(_gameController.Board, Is.EqualTo(_boardMock.Object));
+        Assert.That(_gameController.Board, Is.EqualTo(_board));
         Assert.That(_gameController.IsRoundEnded, Is.False);
         Assert.That(_gameController.IsGameEnded, Is.False);
         Assert.That(_gameController.GameWinner, Is.Null);
@@ -141,15 +141,11 @@ public class GameControllerTests
     {
         _gameController.StartRound();
         
-        Domino domino = (Domino)_gameController.GetHands(_playerMock.Object)[0];
-        
-        _boardMock
-            .Setup(b => b.CanPlace(domino, BoardSide.Left))
-            .Returns(false);
-        
-        // _boardMock
-        //     .Setup(b => b.CanPlace(domino, BoardSide.Right))
-        //     .Returns(false);
+        _board.Dominoes.AddFirst(new Domino((Dot)6, (Dot)6));
+
+        Domino domino = new Domino((Dot)1, (Dot)2);
+
+        AddDominoToHand(_playerMock.Object, domino);
 
         bool result = _gameController.PlayDomino(_playerMock.Object, domino, BoardSide.Left);
 
@@ -162,11 +158,7 @@ public class GameControllerTests
         _gameController.StartRound();
         
         Domino domino = (Domino)_gameController.GetHands(_playerMock.Object)[0];
-        
-        _boardMock
-            .Setup(b => b.CanPlace(domino, BoardSide.Left))
-            .Returns(true);
-        
+
         bool result = _gameController.PlayDomino(_playerMock.Object, domino, BoardSide.Left);
 
         Assert.That(result, Is.True);
@@ -180,10 +172,6 @@ public class GameControllerTests
         Domino domino = (Domino)_gameController.GetHands(_playerMock.Object)[0];
         
         bool eventRaised = false;
-
-        _boardMock
-            .Setup(b => b.CanPlace(domino, BoardSide.Right))
-            .Returns(true);
         
         _gameController.OnDominoPlaced += (player, d, side) =>
         {
@@ -197,8 +185,7 @@ public class GameControllerTests
 
         Assert.That(result, Is.True);
         Assert.That(eventRaised, Is.True);
-
-        _boardMock.Verify(b => b.Place(domino, BoardSide.Right), Times.Once);
+        Assert.That(_board.Dominoes.Count, Is.EqualTo(1));
     }
 
     [Test]
@@ -234,10 +221,6 @@ public class GameControllerTests
     public void CanPlay_BoardIsEmpty_PlayerHasDomino_ReturnsTrue()
     {
         _gameController.StartRound();
-
-        _boardMock
-            .Setup(b => b.IsEmpty)
-            .Returns(true);
         
         bool result = _gameController.CanPlay(_playerMock.Object);
 
@@ -247,10 +230,6 @@ public class GameControllerTests
     [Test]
     public void CanPlay_BoardIsEmpty_PlayerHasNoDomino_ReturnsFalse()
     {
-        _boardMock
-            .Setup(b => b.IsEmpty)
-            .Returns(true);
-        
         bool result = _gameController.CanPlay(_playerMock.Object);
 
         Assert.That(result, Is.False);
@@ -261,19 +240,10 @@ public class GameControllerTests
     {
         _gameController.StartRound();
 
-        _boardMock
-            .Setup(b => b.IsEmpty)
-            .Returns(false);
+        _board.Dominoes.AddFirst(new Domino((Dot)3, (Dot)5));
 
-        Domino domino = (Domino)_gameController.GetHands(_playerMock.Object)[0];
-
-        _boardMock
-            .Setup(b => b.CanPlace(domino, BoardSide.Left))
-            .Returns(true);
-
-        // _boardMock
-        //     .Setup(b => b.CanPlace(domino, BoardSide.Right))
-        //     .Returns(false);
+        Domino domino = new Domino((Dot)2, (Dot)3);
+        SetHand(_playerMock.Object, domino);
 
         bool result = _gameController.CanPlay(_playerMock.Object);
 
@@ -285,19 +255,10 @@ public class GameControllerTests
     {
         _gameController.StartRound();
 
-        _boardMock
-            .Setup(b => b.IsEmpty)
-            .Returns(false);
+        _board.Dominoes.AddFirst(new Domino((Dot)6, (Dot)6));
 
-        Domino domino = (Domino)_gameController.GetHands(_playerMock.Object)[0];
-
-        _boardMock
-            .Setup(b => b.CanPlace(domino, BoardSide.Left))
-            .Returns(false);
-
-        _boardMock
-            .Setup(b => b.CanPlace(domino, BoardSide.Right))
-            .Returns(false);
+        Domino domino = new Domino((Dot)1, (Dot)2);
+        SetHand(_playerMock.Object, domino);
 
         bool result = _gameController.CanPlay(_playerMock.Object);
 
@@ -308,6 +269,8 @@ public class GameControllerTests
     public void CanPlace_DominoIsNotConcrete_ThrowsInvalidOperationException()
     {
         _gameController.StartRound();
+
+        // _board.Dominoes.AddFirst(new Domino((Dot)0, (Dot)0));
 
         IDomino fakeDomino = new Mock<IDomino>().Object;
 
@@ -324,19 +287,10 @@ public class GameControllerTests
     {
         _gameController.StartRound();
 
-        _boardMock
-            .Setup(b => b.IsEmpty)
-            .Returns(false);
+        _board.Dominoes.AddFirst(new Domino((Dot)4, (Dot)6));
 
-        Domino domino = (Domino)_gameController.GetHands(_playerMock.Object)[0];
-
-        _boardMock
-            .Setup(b => b.CanPlace(domino, BoardSide.Left))
-            .Returns(true);
-
-        _boardMock
-            .Setup(b => b.CanPlace(domino, BoardSide.Right))
-            .Returns(false);
+        Domino domino = new Domino((Dot)4, (Dot)2);
+        SetHand(_playerMock.Object, domino);
 
         bool result = _gameController.CanPlay(_playerMock.Object);
 
@@ -348,19 +302,10 @@ public class GameControllerTests
     {
         _gameController.StartRound();
 
-        _boardMock
-            .Setup(b => b.IsEmpty)
-            .Returns(false);
+        _board.Dominoes.AddFirst(new Domino((Dot)1, (Dot)3));
 
-        Domino domino = (Domino)_gameController.GetHands(_playerMock.Object)[0];
-
-        _boardMock
-            .Setup(b => b.CanPlace(domino, BoardSide.Left))
-            .Returns(false);
-
-        _boardMock
-            .Setup(b => b.CanPlace(domino, BoardSide.Right))
-            .Returns(true);
+        Domino domino = new Domino((Dot)5, (Dot)3);
+        SetHand(_playerMock.Object, domino);
 
         bool result = _gameController.CanPlay(_playerMock.Object);
 
@@ -377,6 +322,17 @@ public class GameControllerTests
         hands[player].Add(domino);
     }
 
+    private void SetHand(IPlayer player, params IDomino[] dominoes)
+    {
+        FieldInfo fieldInfo = typeof(GameController)
+            .GetField("_dominoInHands", BindingFlags.NonPublic | BindingFlags.Instance)!;
+
+        Dictionary<IPlayer, List<IDomino>> hands = (Dictionary<IPlayer, List<IDomino>>)fieldInfo.GetValue(_gameController)!;
+
+        hands[player].Clear();
+        hands[player].AddRange(dominoes);
+    }
+
     [Test]
     public void CountPips_ReturnsTotalPips()
     {
@@ -385,8 +341,7 @@ public class GameControllerTests
         Domino domino1 = new Domino((Dot)2, (Dot)3); // Total pips = 5
         Domino domino2 = new Domino((Dot)4, (Dot)6); // Total pips = 10
 
-        AddDominoToHand(_playerMock.Object, domino1);
-        AddDominoToHand(_playerMock.Object, domino2);
+        SetHand(_playerMock.Object, domino1, domino2);
 
         int totalPips = _gameController.CountPips(_playerMock.Object);
 

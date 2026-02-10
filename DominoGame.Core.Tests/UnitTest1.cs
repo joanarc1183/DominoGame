@@ -40,9 +40,9 @@ public class GameController_PlayDomino
     [Test]
     public void PlayDomino_CurrentPlayer_ReturnsFalse()
     {
-        var domino = _gameController.GetHands(_playerMock.Object)[0];
+        IDomino domino = _gameController.GetHands(_playerMock.Object)[0];
 
-        var result = _gameController.PlayDomino(_otherPlayerMock.Object, domino, BoardSide.Left);
+        bool result = _gameController.PlayDomino(_otherPlayerMock.Object, domino, BoardSide.Left);
 
         Assert.That(result, Is.False);
     }
@@ -50,7 +50,7 @@ public class GameController_PlayDomino
     [Test]
     public void PlayDomino_Concrete_ThrowsExeption()
     {
-        var fakeDomino = new Mock<IDomino>().Object;
+        IDomino fakeDomino = new Mock<IDomino>().Object;
 
         Assert.Throws<InvalidOperationException>(() =>
         {
@@ -61,13 +61,13 @@ public class GameController_PlayDomino
     [Test]
     public void PlayDomino_CanPlace_ReturnsFalse()
     {
-        var domino = (Domino)_gameController.GetHands(_playerMock.Object)[0];
+        Domino domino = (Domino)_gameController.GetHands(_playerMock.Object)[0];
         
         _boardMock
             .Setup(b => b.CanPlace(domino, BoardSide.Left))
             .Returns(false);
         
-        var result = _gameController.PlayDomino(_playerMock.Object, domino, BoardSide.Left);
+        bool result = _gameController.PlayDomino(_playerMock.Object, domino, BoardSide.Left);
 
         Assert.That(result, Is.False);
     }
@@ -75,7 +75,7 @@ public class GameController_PlayDomino
     [Test]
     public void PlayDomino_ValidMove_ReturnsTrue_AndEventRaised()
     {
-        var domino = (Domino)_gameController.GetHands(_playerMock.Object)[0];
+        Domino domino = (Domino)_gameController.GetHands(_playerMock.Object)[0];
         
         bool eventRaised = false;
 
@@ -91,7 +91,7 @@ public class GameController_PlayDomino
             Assert.That(BoardSide.Right, Is.EqualTo(side));
         };
 
-        var result = _gameController.PlayDomino(_playerMock.Object, domino, BoardSide.Right);
+        bool result = _gameController.PlayDomino(_playerMock.Object, domino, BoardSide.Right);
 
         Assert.That(result, Is.True);
         Assert.That(eventRaised, Is.True);

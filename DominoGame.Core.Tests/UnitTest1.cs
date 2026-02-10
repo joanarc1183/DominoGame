@@ -35,24 +35,100 @@ public class GameControllerTests
         };
         
         _gameController = new GameController(_players, _boardMock.Object, 100);
-    
-        _gameController.StartRound();
     }
 
     [Test]
-    public void PlayDomino_CurrentPlayer_ReturnsFalse()
+    public void StartRound_InitializesGameState()
     {
+        _gameController.StartRound();
+
+        Assert.That(_gameController.CurrentPlayer, Is.EqualTo(_playerMock.Object));
+        Assert.That(_gameController.Board, Is.EqualTo(_boardMock.Object));
+        Assert.That(_gameController.IsRoundEnded, Is.False);
+        Assert.That(_gameController.IsGameEnded, Is.False);
+        Assert.That(_gameController.GameWinner, Is.Null);
+    }
+
+    [Test]
+    public void NextTurn_ChangesCurrentPlayer()
+    {
+        _gameController.StartRound();
+
+        IPlayer firstPlayer = _gameController.CurrentPlayer;
+
+        _gameController.NextTurn();
+
+        IPlayer secondPlayer = _gameController.CurrentPlayer;
+
+        Assert.That(firstPlayer, Is.Not.EqualTo(secondPlayer));
+        Assert.That(secondPlayer, Is.EqualTo(_otherPlayerMock.Object));
+    }
+
+    [Test]
+    public void NextTurn_RoundEnded_DoesNotChangeCurrentPlayer()
+    {
+        _gameController.StartRound();
+
+        FieldInfo roundEndedField = typeof(GameController)
+            .GetField("_roundEnded", BindingFlags.NonPublic | BindingFlags.Instance)!;
+        roundEndedField.SetValue(_gameController, true);
+
+        IPlayer currentPlayerBefore = _gameController.CurrentPlayer;
+
+        _gameController.NextTurn();
+
+        IPlayer currentPlayerAfter = _gameController.CurrentPlayer;
+
+        Assert.That(currentPlayerBefore, Is.EqualTo(currentPlayerAfter));
+    }
+
+    [Test]
+    public void GetHands_ReturnsCorrectDominoes()
+    {
+        _gameController.StartRound();
+
+        IReadOnlyList<IDomino> playerHand = _gameController.GetHands(_playerMock.Object);
+        IReadOnlyList<IDomino> otherPlayerHand = _gameController.GetHands(_otherPlayerMock.Object);
+
+        Assert.That(playerHand, Is.Not.Null);
+        Assert.That(otherPlayerHand, Is.Not.Null);
+        Assert.That(playerHand.Count, Is.EqualTo(7));
+        Assert.That(otherPlayerHand.Count, Is.EqualTo(7));
+    }
+
+    [Test]
+    public void GetHands_ReturnsEmptyListDominoes()
+    {
+        IReadOnlyList<IDomino> playerHand = _gameController.GetHands(_playerMock.Object);
+        IReadOnlyList<IDomino> otherPlayerHand = _gameController.GetHands(_otherPlayerMock.Object);
+
+        Assert.That(playerHand, Is.Not.Null);
+        Assert.That(otherPlayerHand, Is.Not.Null);
+        Assert.That(playerHand.Count, Is.EqualTo(0));
+        Assert.That(otherPlayerHand.Count, Is.EqualTo(0));
+    }
+
+    [Test]
+    public void PlayDomino_NotCurrentPlayer_ReturnsFalse()
+    {
+        _gameController.StartRound();
+
         IDomino domino = _gameController.GetHands(_playerMock.Object)[0];
 
         bool result = _gameController.PlayDomino(_otherPlayerMock.Object, domino, BoardSide.Left);
+        // bool result = _gameController.PlayDomino(_otherPlayerMock.Object, domino, BoardSide.Right);
 
         Assert.That(result, Is.False);
     }
 
     [Test]
-    public void PlayDomino_Concrete_ThrowsExeption()
+    public void PlayDomino_DominoIsNotConcrete_ThrowsExeption()
     {
+        _gameController.StartRound();
+
         IDomino fakeDomino = new Mock<IDomino>().Object;
+
+        AddDominoToHand(_playerMock.Object, fakeDomino);
 
         Assert.Throws<InvalidOperationException>(() =>
         {
@@ -61,14 +137,20 @@ public class GameControllerTests
     }
 
     [Test]
-    public void PlayDomino_CanPlace_ReturnsFalse()
+    public void PlayDomino_CannotPlace_ReturnsFalse()
     {
+        _gameController.StartRound();
+        
         Domino domino = (Domino)_gameController.GetHands(_playerMock.Object)[0];
         
         _boardMock
             .Setup(b => b.CanPlace(domino, BoardSide.Left))
             .Returns(false);
         
+        // _boardMock
+        //     .Setup(b => b.CanPlace(domino, BoardSide.Right))
+        //     .Returns(false);
+
         bool result = _gameController.PlayDomino(_playerMock.Object, domino, BoardSide.Left);
 
         Assert.That(result, Is.False);
@@ -77,6 +159,8 @@ public class GameControllerTests
     [Test]
     public void PlayDomino_CanPlace_ReturnsTrue()
     {
+        _gameController.StartRound();
+        
         Domino domino = (Domino)_gameController.GetHands(_playerMock.Object)[0];
         
         _boardMock
@@ -91,6 +175,8 @@ public class GameControllerTests
     [Test]
     public void PlayDomino_ValidMove_ReturnsTrue()
     {
+        _gameController.StartRound();
+
         Domino domino = (Domino)_gameController.GetHands(_playerMock.Object)[0];
         
         bool eventRaised = false;
@@ -104,7 +190,7 @@ public class GameControllerTests
             eventRaised = true;
             Assert.That(_playerMock.Object, Is.EqualTo(player));
             Assert.That(domino, Is.EqualTo(d));
-            Assert.That(BoardSide.Right, Is.EqualTo(side));
+            Assert.That(side, Is.EqualTo(BoardSide.Right));
         };
 
         bool result = _gameController.PlayDomino(_playerMock.Object, domino, BoardSide.Right);
@@ -116,7 +202,7 @@ public class GameControllerTests
     }
 
     [Test]
-    public void PassTurn_ReturnsFalse()
+    public void PassTurn_NotCurrentPlayer_ReturnsFalse()
     {
         bool result = _gameController.PassTurn(_otherPlayerMock.Object);
         Assert.That(result, Is.False);
@@ -147,6 +233,8 @@ public class GameControllerTests
     [Test]
     public void CanPlay_BoardIsEmpty_PlayerHasDomino_ReturnsTrue()
     {
+        _gameController.StartRound();
+
         _boardMock
             .Setup(b => b.IsEmpty)
             .Returns(true);
@@ -155,10 +243,24 @@ public class GameControllerTests
 
         Assert.That(result, Is.True);
     }
+    
+    [Test]
+    public void CanPlay_BoardIsEmpty_PlayerHasNoDomino_ReturnsFalse()
+    {
+        _boardMock
+            .Setup(b => b.IsEmpty)
+            .Returns(true);
+        
+        bool result = _gameController.CanPlay(_playerMock.Object);
+
+        Assert.That(result, Is.False);
+    }
 
     [Test]
     public void CanPlay_BoardNotEmpty_PlayerHasDomino_ReturnsTrue()
     {
+        _gameController.StartRound();
+
         _boardMock
             .Setup(b => b.IsEmpty)
             .Returns(false);
@@ -179,17 +281,90 @@ public class GameControllerTests
     }
 
     [Test]
-    public void CanPlace_DominoIsNotConcrete_InvalidOperationException()
+    public void CanPlay_BoardNotEmpty_PlayerHasNoDomino_ReturnsFalse()
     {
+        _gameController.StartRound();
+
+        _boardMock
+            .Setup(b => b.IsEmpty)
+            .Returns(false);
+
+        Domino domino = (Domino)_gameController.GetHands(_playerMock.Object)[0];
+
+        _boardMock
+            .Setup(b => b.CanPlace(domino, BoardSide.Left))
+            .Returns(false);
+
+        _boardMock
+            .Setup(b => b.CanPlace(domino, BoardSide.Right))
+            .Returns(false);
+
+        bool result = _gameController.CanPlay(_playerMock.Object);
+
+        Assert.That(result, Is.False);
+    }
+
+    [Test]
+    public void CanPlace_DominoIsNotConcrete_ThrowsInvalidOperationException()
+    {
+        _gameController.StartRound();
+
         IDomino fakeDomino = new Mock<IDomino>().Object;
-        
-        // AddDominoToHand(_playerMock.Object, fakeDomino);
-        // must delete all dominoes in hand
-        
+
+        AddDominoToHand(_playerMock.Object, fakeDomino);
+
         Assert.Throws<InvalidOperationException>(() =>
         {
             _gameController.CanPlay(_playerMock.Object);
         });
+    }
+
+    [Test]
+    public void CanPlace_BoardNotEmpty_CanPlaceOnLeft_ReturnsTrue()
+    {
+        _gameController.StartRound();
+
+        _boardMock
+            .Setup(b => b.IsEmpty)
+            .Returns(false);
+
+        Domino domino = (Domino)_gameController.GetHands(_playerMock.Object)[0];
+
+        _boardMock
+            .Setup(b => b.CanPlace(domino, BoardSide.Left))
+            .Returns(true);
+
+        _boardMock
+            .Setup(b => b.CanPlace(domino, BoardSide.Right))
+            .Returns(false);
+
+        bool result = _gameController.CanPlay(_playerMock.Object);
+
+        Assert.That(result, Is.True);
+    }
+    
+    [Test]
+    public void CanPlace_BoardNotEmpty_CanPlaceOnRight_ReturnsTrue()
+    {
+        _gameController.StartRound();
+
+        _boardMock
+            .Setup(b => b.IsEmpty)
+            .Returns(false);
+
+        Domino domino = (Domino)_gameController.GetHands(_playerMock.Object)[0];
+
+        _boardMock
+            .Setup(b => b.CanPlace(domino, BoardSide.Left))
+            .Returns(false);
+
+        _boardMock
+            .Setup(b => b.CanPlace(domino, BoardSide.Right))
+            .Returns(true);
+
+        bool result = _gameController.CanPlay(_playerMock.Object);
+
+        Assert.That(result, Is.True);
     }
     
     private void AddDominoToHand(IPlayer player, IDomino domino)
@@ -202,4 +377,19 @@ public class GameControllerTests
         hands[player].Add(domino);
     }
 
+    [Test]
+    public void CountPips_ReturnsTotalPips()
+    {
+        _gameController.StartRound();
+
+        Domino domino1 = new Domino((Dot)2, (Dot)3); // Total pips = 5
+        Domino domino2 = new Domino((Dot)4, (Dot)6); // Total pips = 10
+
+        AddDominoToHand(_playerMock.Object, domino1);
+        AddDominoToHand(_playerMock.Object, domino2);
+
+        int totalPips = _gameController.CountPips(_playerMock.Object);
+
+        Assert.That(totalPips, Is.EqualTo(15));
+    }
 }

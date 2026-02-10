@@ -6,7 +6,7 @@ using System.Collections.Generic;
 namespace DominoGame.Core.Tests;
 
 [TestFixture]
-public class GameController_PlayDomino
+public class GameControllerTests
 {
     private GameController _gameController;
 

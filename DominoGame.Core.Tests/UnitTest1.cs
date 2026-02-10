@@ -46,4 +46,56 @@ public class GameController_PlayDomino
 
         Assert.That(result, Is.False);
     }
+
+    [Test]
+    public void PlayDomino_Concrete_ThrowsExeption()
+    {
+        var fakeDomino = new Mock<IDomino>().Object;
+
+        Assert.Throws<InvalidOperationException>(() =>
+        {
+            _gameController.PlayDomino(_playerMock.Object, fakeDomino, BoardSide.Left);
+        });
+    }
+
+    [Test]
+    public void PlayDomino_CanPlace_ReturnsFalse()
+    {
+        var domino = (Domino)_gameController.GetHands(_playerMock.Object)[0];
+        
+        _boardMock
+            .Setup(b => b.CanPlace(domino, BoardSide.Left))
+            .Returns(false);
+        
+        var result = _gameController.PlayDomino(_playerMock.Object, domino, BoardSide.Left);
+
+        Assert.That(result, Is.False);
+    }
+
+    [Test]
+    public void PlayDomino_ValidMove_ReturnsTrue_AndEventRaised()
+    {
+        var domino = (Domino)_gameController.GetHands(_playerMock.Object)[0];
+        
+        bool eventRaised = false;
+
+        _boardMock
+            .Setup(b => b.CanPlace(domino, BoardSide.Right))
+            .Returns(true);
+        
+        _gameController.OnDominoPlaced += (player, d, side) =>
+        {
+            eventRaised = true;
+            Assert.That(_playerMock.Object, Is.EqualTo(player));
+            Assert.That(domino, Is.EqualTo(d));
+            Assert.That(BoardSide.Right, Is.EqualTo(side));
+        };
+
+        var result = _gameController.PlayDomino(_playerMock.Object, domino, BoardSide.Right);
+
+        Assert.That(result, Is.True);
+        Assert.That(eventRaised, Is.True);
+
+        _boardMock.Verify(b => b.Place(domino, BoardSide.Right), Times.Once);
+    }
 }

@@ -87,7 +87,7 @@ public class GameController
     {
         if (_roundEnded || _isGameEnded) return;
 
-        var player = CurrentPlayer;
+        IPlayer player = CurrentPlayer;
 
         if (!CanPlay(player))
         {
@@ -174,7 +174,7 @@ public class GameController
     private void CheckRoundEnd()
     {
         // Normal win
-        var emptyPlayer = _players.FirstOrDefault(p => _dominoInHands[p].Count == 0);
+        IPlayer? emptyPlayer = _players.FirstOrDefault(p => _dominoInHands[p].Count == 0);
         
         if (emptyPlayer != null)
         {
@@ -207,10 +207,10 @@ public class GameController
     // Menang karena buntu: pemain dengan total pip terendah menang, atau seri jika imbang.
     private void HandleBlockedGame()
     {
-        var pipTotals = _players.ToDictionary(p => p, CountPips);
+        Dictionary<IPlayer, int> pipTotals = _players.ToDictionary(p => p, CountPips);
 
         int min = pipTotals.Min(x => x.Value);
-        var lowestPlayers = pipTotals.Where(x => x.Value == min).ToList();
+        List<KeyValuePair<IPlayer, int>> lowestPlayers = pipTotals.Where(x => x.Value == min).ToList();
 
         // Tie → no winner
         if (lowestPlayers.Count > 1)
@@ -219,7 +219,7 @@ public class GameController
             return;
         }
 
-        var winner = lowestPlayers.First().Key;
+        IPlayer winner = lowestPlayers.First().Key;
 
         int gain = pipTotals.Sum(x => x.Value) - pipTotals[winner];
         winner.Score += gain;
@@ -249,7 +249,7 @@ public class GameController
         _consecutivePasses = 0;
         _roundEnded = false;
 
-        foreach (var p in _players)
+        foreach (IPlayer p in _players)
             _dominoInHands[p].Clear();
 
     }
@@ -258,7 +258,7 @@ public class GameController
     private void DealInitialHands()
     {
         for (int i = 0; i < 7; i++)
-            foreach (var p in _players)
+            foreach (IPlayer p in _players)
                 _dominoInHands[p].Add(_boneyard.Draw());
     }
     // Membuat set domino lengkap 0-0 sampai 6-6.
@@ -279,5 +279,4 @@ public class GameController
         );
         return snapshot;
     }
-
 }

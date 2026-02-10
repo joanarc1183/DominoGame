@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Windows;
+using DominoGame.Wpf.Services;
 using DominoGame.Wpf.ViewModels;
 
 namespace DominoGame.Wpf;
@@ -11,6 +12,9 @@ public partial class GameOverWindow : Window
     {
         InitializeComponent();
         DataContext = new GameOverViewModel(players, $"Pemenang: {winnerName}");
+        UiSoundService.StopBackgroundMusic();
+        UiSoundService.PlayWin();
+        Closed += (_, _) => UiSoundService.StartBackgroundMusic();
     }
 
     /// Handler tombol Main Lagi: tutup dialog dengan hasil true.

@@ -300,7 +300,7 @@ public partial class GameView : UserControl
         var topPlayers = players.Where(p => p.Score == maxScore).ToList();
         string winnerName = topPlayers.Count > 1
             ? "Seri"
-            : $"{topPlayers[0].Name} ({topPlayers[0].Score})";
+            : topPlayers[0].Name;
 
         var gameOver = new GameOverWindow(players, winnerName)
         {

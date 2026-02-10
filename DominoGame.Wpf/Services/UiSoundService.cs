@@ -11,6 +11,7 @@ public static class UiSoundService
     private static MediaPlayer? _buttonPlayer;
     private static MediaPlayer? _dominoPlayer;
     private static MediaPlayer? _backgroundPlayer;
+    private static MediaPlayer? _winPlayer;
 
     public static void PlayButtonClick()
     {
@@ -52,6 +53,23 @@ public static class UiSoundService
         {
             EnsureBackgroundPlayer();
             _backgroundPlayer?.Play();
+        }
+        catch
+        {
+            // Ignore sound failures to avoid blocking UI actions.
+        }
+    }
+
+    public static void PlayWin()
+    {
+        try
+        {
+            EnsureWinPlayer();
+            if (_winPlayer is null)
+                return;
+
+            _winPlayer.Position = TimeSpan.Zero;
+            _winPlayer.Play();
         }
         catch
         {
@@ -147,6 +165,26 @@ public static class UiSoundService
             {
                 InitPlayer();
             }
+        }
+    }
+
+    private static void EnsureWinPlayer()
+    {
+        lock (_lock)
+        {
+            if (_winPlayer is not null)
+                return;
+
+            var path = GetSoundPath("Assets/Sounds/Win.mp3");
+            if (path is null)
+                return;
+
+            var player = new MediaPlayer
+            {
+                Volume = 1.0
+            };
+            player.Open(new Uri(path, UriKind.Absolute));
+            _winPlayer = player;
         }
     }
 

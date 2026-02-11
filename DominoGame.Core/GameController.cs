@@ -300,8 +300,20 @@ public class GameController
     {
         for (int i = 0; i < 7; i++)
             foreach (IPlayer p in _players)
-                _dominoInHands[p].Add(_boneyard.Draw());
+                _dominoInHands[p].Add(Draw());
     }
+
+    // Mengambil domino paling atas dari boneyard.
+    private Domino Draw()
+    {
+        if (_boneyard.IsEmpty)
+            throw new InvalidOperationException("Boneyard empty");
+
+        Domino domino = _boneyard.Dominoes[0];
+        _boneyard.Dominoes.RemoveAt(0);
+        return domino;
+    }
+
     // Membuat set domino lengkap 0-0 sampai 6-6.
     private IEnumerable<Domino> GenerateFullSet()
     {

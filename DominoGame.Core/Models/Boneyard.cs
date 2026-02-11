@@ -18,15 +18,6 @@ public class Boneyard : IBoneyard
         Shuffle();
     }
 
-    /// Mengambil domino paling atas dari boneyard.
-    public Domino Draw()
-    {
-        if (IsEmpty) throw new InvalidOperationException("Boneyard empty");
-        var d = Dominoes[0];
-        Dominoes.RemoveAt(0);
-        return d;
-    }
-
     /// Mengacak urutan domino di boneyard.
     private void Shuffle()
     {

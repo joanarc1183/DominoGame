@@ -6,6 +6,4 @@ public interface IBoneyard
     List<Domino> Dominoes { get; }
     /// Menandakan apakah boneyard sudah habis.
     bool IsEmpty { get; }
-    /// Mengambil domino paling atas dari boneyard.
-    Domino Draw();
 }

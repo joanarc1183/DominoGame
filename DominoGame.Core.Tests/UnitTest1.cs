@@ -23,7 +23,6 @@ public class GameControllerTests
     [SetUp]
     public void Setup()
     {
-
         _playerMock = new Mock<IPlayer>();
         _otherPlayerMock = new Mock<IPlayer>();
         _dominoMock = new Mock<IDomino>();
@@ -43,11 +42,14 @@ public class GameControllerTests
     {
         _gameController.StartRound();
 
-        Assert.That(_gameController.CurrentPlayer, Is.EqualTo(_playerMock.Object));
-        Assert.That(_gameController.Board, Is.EqualTo(_board));
-        Assert.That(_gameController.IsRoundEnded, Is.False);
-        Assert.That(_gameController.IsGameEnded, Is.False);
-        Assert.That(_gameController.GameWinner, Is.Null);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_gameController.CurrentPlayer, Is.EqualTo(_playerMock.Object));
+            Assert.That(_gameController.Board, Is.EqualTo(_board));
+            Assert.That(_gameController.IsRoundEnded, Is.False);
+            Assert.That(_gameController.IsGameEnded, Is.False);
+            Assert.That(_gameController.GameWinner, Is.Null);
+        }
     }
 
     [Test]
@@ -64,8 +66,11 @@ public class GameControllerTests
 
         _gameController.StartRound();
 
-        Assert.That(eventTriggered, Is.True);
-        Assert.That(turnPlayer, Is.EqualTo(_playerMock.Object));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(eventTriggered, Is.True);
+            Assert.That(turnPlayer, Is.EqualTo(_playerMock.Object));
+        }
     }
 
     [Test]
@@ -79,8 +84,11 @@ public class GameControllerTests
 
         IPlayer secondPlayer = _gameController.CurrentPlayer;
 
-        Assert.That(firstPlayer, Is.Not.EqualTo(secondPlayer));
-        Assert.That(secondPlayer, Is.EqualTo(_otherPlayerMock.Object));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(firstPlayer, Is.Not.EqualTo(secondPlayer));
+            Assert.That(secondPlayer, Is.EqualTo(_otherPlayerMock.Object));
+        }
     }
 
     [Test]
@@ -154,10 +162,13 @@ public class GameControllerTests
         IReadOnlyList<IDomino> playerHand = _gameController.GetHands(_playerMock.Object);
         IReadOnlyList<IDomino> otherPlayerHand = _gameController.GetHands(_otherPlayerMock.Object);
 
-        Assert.That(playerHand, Is.Not.Null);
-        Assert.That(otherPlayerHand, Is.Not.Null);
-        Assert.That(playerHand.Count, Is.EqualTo(7));
-        Assert.That(otherPlayerHand.Count, Is.EqualTo(7));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(playerHand, Is.Not.Null);
+            Assert.That(otherPlayerHand, Is.Not.Null);
+            Assert.That(playerHand.Count, Is.EqualTo(7));
+            Assert.That(otherPlayerHand.Count, Is.EqualTo(7));
+        }
     }
 
     [Test]
@@ -166,10 +177,13 @@ public class GameControllerTests
         IReadOnlyList<IDomino> playerHand = _gameController.GetHands(_playerMock.Object);
         IReadOnlyList<IDomino> otherPlayerHand = _gameController.GetHands(_otherPlayerMock.Object);
 
-        Assert.That(playerHand, Is.Not.Null);
-        Assert.That(otherPlayerHand, Is.Not.Null);
-        Assert.That(playerHand.Count, Is.EqualTo(0));
-        Assert.That(otherPlayerHand.Count, Is.EqualTo(0));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(playerHand, Is.Not.Null);
+            Assert.That(otherPlayerHand, Is.Not.Null);
+            Assert.That(playerHand.Count, Is.EqualTo(0));
+            Assert.That(otherPlayerHand.Count, Is.EqualTo(0));
+        }
     }
 
     [Test]
@@ -238,16 +252,22 @@ public class GameControllerTests
         _gameController.OnDominoPlaced += (player, d, side) =>
         {
             eventRaised = true;
-            Assert.That(_playerMock.Object, Is.EqualTo(player));
-            Assert.That(domino, Is.EqualTo(d));
-            Assert.That(side, Is.EqualTo(BoardSide.Right));
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(_playerMock.Object, Is.EqualTo(player));
+                Assert.That(domino, Is.EqualTo(d));
+                Assert.That(side, Is.EqualTo(BoardSide.Right));
+            }
         };
 
         bool result = _gameController.PlayDomino(_playerMock.Object, domino, BoardSide.Right);
 
-        Assert.That(result, Is.True);
-        Assert.That(eventRaised, Is.True);
-        Assert.That(_board.Dominoes.Count, Is.EqualTo(1));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Is.True);
+            Assert.That(eventRaised, Is.True);
+            Assert.That(_board.Dominoes.Count, Is.EqualTo(1));
+        }
     }
 
     [Test]
@@ -343,8 +363,6 @@ public class GameControllerTests
     public void CanPlay_DominoIsNotConcrete_ThrowsInvalidOperationException()
     {
         _gameController.StartRound();
-
-        // _board.Dominoes.AddFirst(new Domino((Dot)0, (Dot)0));
 
         AddDominoToHand(_playerMock.Object, _dominoMock.Object);
 
@@ -448,8 +466,6 @@ public class GameControllerTests
     [Test]
     public void Place_CannotPlace_ThrowsExeption()
     {
-        // _gameController.StartRound();
-
         _gameController.Place(new Domino((Dot)6, (Dot)6), BoardSide.Left);
 
         Domino d = new Domino((Dot)1, (Dot)2);
@@ -471,8 +487,11 @@ public class GameControllerTests
 
         Domino firstDomino = _gameController.Board.Dominoes.First.Value;
 
-        Assert.That(firstDomino.LeftPip, Is.EqualTo((Dot)2));
-        Assert.That(firstDomino.RightPip, Is.EqualTo((Dot)4));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(firstDomino.LeftPip, Is.EqualTo((Dot)2));
+            Assert.That(firstDomino.RightPip, Is.EqualTo((Dot)4));
+        }
     }
 
     [Test]
@@ -486,8 +505,11 @@ public class GameControllerTests
 
         Domino firstDomino = _gameController.Board.Dominoes.First.Value;
 
-        Assert.That(firstDomino.LeftPip, Is.EqualTo((Dot)1));
-        Assert.That(firstDomino.RightPip, Is.EqualTo((Dot)4));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(firstDomino.LeftPip, Is.EqualTo((Dot)1));
+            Assert.That(firstDomino.RightPip, Is.EqualTo((Dot)4));
+        }
     }
 
     [Test]
@@ -501,8 +523,11 @@ public class GameControllerTests
 
         Domino lastDomino = _gameController.Board.Dominoes.Last.Value;
 
-        Assert.That(lastDomino.LeftPip, Is.EqualTo((Dot)3));
-        Assert.That(lastDomino.RightPip, Is.EqualTo((Dot)6));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(lastDomino.LeftPip, Is.EqualTo((Dot)3));
+            Assert.That(lastDomino.RightPip, Is.EqualTo((Dot)6));
+        }
     }
 
     [Test]
@@ -516,8 +541,11 @@ public class GameControllerTests
 
         Domino lastDomino = _gameController.Board.Dominoes.Last.Value;
 
-        Assert.That(lastDomino.LeftPip, Is.EqualTo((Dot)3));
-        Assert.That(lastDomino.RightPip, Is.EqualTo((Dot)5));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(lastDomino.LeftPip, Is.EqualTo((Dot)3));
+            Assert.That(lastDomino.RightPip, Is.EqualTo((Dot)5));
+        }
     }
 
     private void AddDominoToHand(IPlayer player, IDomino domino)
@@ -540,7 +568,4 @@ public class GameControllerTests
         hands[player].Clear();
         hands[player].AddRange(dominoes);
     }
-
-
 }
-

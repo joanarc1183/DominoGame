@@ -66,14 +66,14 @@ public class GameController
 
     // ================= CONSTRUCTOR =================
     // Membuat controller game dengan daftar pemain, board, dan target skor.
-    public GameController(List<IPlayer> players, IBoard board, int maxScoreToWin, ILogger<GameController>? logger = null)
+    public GameController(List<IPlayer> players, IBoard board, int maxScoreToWin, ILogger<GameController>? logger)
     {
         _players = players;
         _board = board;
         _maxScoreToWin = maxScoreToWin;
         _dominoInHands = players.ToDictionary(p => p, _ => new List<IDomino>());
         _boneyard = new Boneyard(GenerateFullSet());
-        _logger = logger ?? NullLogger<GameController>.Instance;
+        _logger = logger;
     }
 
     // ================= GAME FLOW =================
@@ -349,7 +349,6 @@ public class GameController
     {
         for (int i = 0; i <= 6; i++)
             for (int j = i; j <= 6; j++)
-                // yield return membuat domino satu per satu secara lazy tanpa membuat list dulu.
                 yield return new Domino((Dot)i, (Dot)j);
     }
 

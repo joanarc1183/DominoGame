@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using NUnit.Framework.Internal.Execution;
 using System.Reflection;
 using NUnit.Framework.Interfaces;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace DominoGame.Core.Tests;
 
@@ -17,7 +18,6 @@ public class GameControllerTests
     private Mock<IPlayer> _otherPlayerMock;
     private Mock<IDomino> _dominoMock;
     private Board _board;
-
     private List<IPlayer> _players;
 
     [SetUp]
@@ -34,7 +34,8 @@ public class GameControllerTests
             _otherPlayerMock.Object,
         };
         
-        _gameController = new GameController(_players, _board, 100);
+        _gameController = new GameController(_players, _board, 100, NullLogger<GameController>.Instance);
+
     }
 
     [Test]
@@ -85,7 +86,7 @@ public class GameControllerTests
             new Mock<IPlayer>().Object
         };
 
-        var controller = new GameController(players, new Board(), 100);
+        var controller = new GameController(players, new Board(), 100, NullLogger<GameController>.Instance);
 
         Assert.Throws<InvalidOperationException>(() =>
         {

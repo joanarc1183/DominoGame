@@ -153,20 +153,12 @@ public class GameController
         }
 
         if (_board.IsEmpty)
-        {
-            bool canPlay = hand.Count > 0;
-            return canPlay;
-        }
+            return hand.Count > 0;
 
-        bool hasPlayableDomino = hand
-            .Any(d =>
-            {
-                if (d is not Domino concrete)
-                    throw new InvalidOperationException("Domino implementation tidak dikenal.");
-                return CanPlace(concrete, BoardSide.Left) ||
-                       CanPlace(concrete, BoardSide.Right);
-            });
-        return hasPlayableDomino;
+        return hand.Cast<Domino>()
+            .Any(concrete =>
+                CanPlace(concrete, BoardSide.Left) ||
+                CanPlace(concrete, BoardSide.Right));
     }
 
     // Menjumlahkan total pip dari semua domino di tangan pemain.

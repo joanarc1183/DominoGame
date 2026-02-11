@@ -50,6 +50,24 @@ public class GameControllerTests
     }
 
     [Test]
+    public void StartRound_OnTurnChanged()
+    {
+        bool eventTriggered = false;
+        IPlayer? turnPlayer = null;
+
+        _gameController.OnTurnChanged += (player) =>
+        {
+            eventTriggered = true;
+            turnPlayer = player;
+        };
+
+        _gameController.StartRound();
+
+        Assert.That(eventTriggered, Is.True);
+        Assert.That(turnPlayer, Is.EqualTo(_playerMock.Object));
+    }
+
+    [Test]
     public void NextTurn_ChangesCurrentPlayer()
     {
         _gameController.StartRound();
@@ -62,6 +80,34 @@ public class GameControllerTests
 
         Assert.That(firstPlayer, Is.Not.EqualTo(secondPlayer));
         Assert.That(secondPlayer, Is.EqualTo(_otherPlayerMock.Object));
+    }
+
+    [Test]
+    public void NextTurn_CannotPlay_MustPassTurn()
+    {
+        _gameController.StartRound();
+
+        _board.Dominoes.AddFirst(new Domino((Dot)6, (Dot)6));
+        SetHand(_playerMock.Object, new Domino((Dot)1, (Dot)2));
+
+        bool passTriggered = false;
+        IPlayer? passedPlayer = null;
+        IPlayer currentPlayerBefore = _gameController.CurrentPlayer;
+
+        _gameController.OnPlayerPassed += (player) =>
+        {
+            passTriggered = true;
+            passedPlayer = player;
+        };
+
+        _gameController.NextTurn();
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(passTriggered, Is.True);
+            Assert.That(passedPlayer, Is.EqualTo(currentPlayerBefore));
+            Assert.That(_gameController.CurrentPlayer, Is.EqualTo(_otherPlayerMock.Object));
+        }
     }
 
     [Test]
@@ -80,6 +126,23 @@ public class GameControllerTests
         IPlayer currentPlayerAfter = _gameController.CurrentPlayer;
 
         Assert.That(currentPlayerBefore, Is.EqualTo(currentPlayerAfter));
+    }
+
+    [Test]
+    public void NextTurn_OnTurnChanged()
+    {
+        bool eventTriggered = false;
+
+        _gameController.StartRound();
+
+        _gameController.OnTurnChanged += (player) =>
+        {
+            eventTriggered = true;
+        };
+
+        _gameController.NextTurn();
+
+        Assert.That(eventTriggered, Is.True);
     }
 
     [Test]
@@ -198,8 +261,20 @@ public class GameControllerTests
     [Test]
     public void PassTurn_ValidMove_ReturnsTrue()
     {
-        bool eventRaised = false;
+        _gameController.StartRound();
 
+        bool result = _gameController.PassTurn(_playerMock.Object);
+
+        Assert.That(result, Is.True);
+    }
+
+    [Test]
+    public void PassTurn_OnPlayerPassed()
+    {
+        _gameController.StartRound();
+
+        bool eventRaised = false;
+        
         IPlayer? passedPlayer = null;
 
         _gameController.OnPlayerPassed += (player) =>
@@ -208,13 +283,13 @@ public class GameControllerTests
             passedPlayer = player;
         };
 
-        IPlayer currPlayer = _playerMock.Object;
+        _gameController.PassTurn(_playerMock.Object);
 
-        bool result = _gameController.PassTurn(currPlayer);
-
-        Assert.That(result, Is.True);
-        Assert.That(eventRaised, Is.True);
-        Assert.That(currPlayer, Is.EqualTo(passedPlayer));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(eventRaised, Is.True);
+            Assert.That(passedPlayer, Is.EqualTo(_playerMock.Object));
+        }
     }
 
     [Test]
@@ -266,7 +341,7 @@ public class GameControllerTests
     }
 
     [Test]
-    public void CanPlace_DominoIsNotConcrete_ThrowsInvalidOperationException()
+    public void CanPlay_DominoIsNotConcrete_ThrowsInvalidOperationException()
     {
         _gameController.StartRound();
 

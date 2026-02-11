@@ -74,6 +74,26 @@ public class GameControllerTests
     }
 
     [Test]
+    public void StartRound_Draw_ThrowsInvalidOperationException()
+    {
+        var players = new List<IPlayer>
+        {
+            new Mock<IPlayer>().Object,
+            new Mock<IPlayer>().Object,
+            new Mock<IPlayer>().Object,
+            new Mock<IPlayer>().Object,
+            new Mock<IPlayer>().Object
+        };
+
+        var controller = new GameController(players, new Board(), 100);
+
+        Assert.Throws<InvalidOperationException>(() =>
+        {
+            controller.StartRound();
+        });
+    }
+
+    [Test]
     public void NextTurn_ChangesCurrentPlayer()
     {
         _gameController.StartRound();
@@ -183,6 +203,19 @@ public class GameControllerTests
             Assert.That(otherPlayerHand, Is.Not.Null);
             Assert.That(playerHand.Count, Is.EqualTo(0));
             Assert.That(otherPlayerHand.Count, Is.EqualTo(0));
+        }
+    }
+
+    [Test]
+    public void Players_ReturnsConfiguredPlayersInOrder()
+    {
+        IReadOnlyList<IPlayer> players = _gameController.Players;
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(players.Count, Is.EqualTo(2));
+            Assert.That(players[0], Is.EqualTo(_playerMock.Object));
+            Assert.That(players[1], Is.EqualTo(_otherPlayerMock.Object));
         }
     }
 
@@ -548,6 +581,25 @@ public class GameControllerTests
         }
     }
 
+    [Test]
+    public void Draw_BoneyardEmpty_ThrowsInvalidOperationException()
+    {
+        FieldInfo boneyardField = typeof(GameController)
+            .GetField("_boneyard", BindingFlags.NonPublic | BindingFlags.Instance)!;
+        boneyardField.SetValue(_gameController, new Boneyard(Array.Empty<Domino>()));
+
+        MethodInfo drawMethod = typeof(GameController)
+            .GetMethod("Draw", BindingFlags.NonPublic | BindingFlags.Instance)!;
+
+        TargetInvocationException ex = Assert.Throws<TargetInvocationException>(() =>
+        {
+            _ = drawMethod.Invoke(_gameController, null);
+        })!;
+
+        Assert.That(ex.InnerException, Is.TypeOf<InvalidOperationException>());
+        Assert.That(ex.InnerException!.Message, Is.EqualTo("Boneyard empty"));
+    }
+
     private void AddDominoToHand(IPlayer player, IDomino domino)
     {
         FieldInfo fieldInfo = typeof(GameController)
@@ -568,4 +620,26 @@ public class GameControllerTests
         hands[player].Clear();
         hands[player].AddRange(dominoes);
     }
+
+    [Test]
+    public void Player_Constructor_SetsName_AndScoreDefaultZero()
+    {
+        var player = new Player("Joan");
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(player.Name, Is.EqualTo("Joan"));
+            Assert.That(player.Score, Is.EqualTo(0));
+        }
+    }
+
+    [Test]
+    public void Player_Score_CanBeUpdated()
+    {
+        var player = new Player("Joan");
+        player.Score = 25;
+
+        Assert.That(player.Score, Is.EqualTo(25));
+    }
+
 }

@@ -60,7 +60,8 @@ public partial class MainWindow : Window
 
         if (setup.ShowDialog() == true)
         {
-            var gameVm = new GameViewModel(setup.Players, setup.MaxScoreToWin);
+            var app = (App)Application.Current;
+            var gameVm = new GameViewModel(setup.Players, setup.MaxScoreToWin, app.AppLoggerFactory);
             var window = new MainWindow(gameVm);
             Application.Current.MainWindow = window;
             window.Show();

@@ -20,7 +20,8 @@ public partial class StartMenuWindow : Window
 
         if (setup.ShowDialog() == true)
         {
-            var gameVm = new GameViewModel(setup.Players, setup.MaxScoreToWin);
+            var app = (App)Application.Current;
+            var gameVm = new GameViewModel(setup.Players, setup.MaxScoreToWin, app.AppLoggerFactory);
             var main = new MainWindow(gameVm);
             Application.Current.MainWindow = main;
             main.Show();

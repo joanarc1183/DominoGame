@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 using Moq;
 using DominoGame.Core;
 using System.Collections.Generic;
@@ -190,13 +190,11 @@ public class GameControllerTests
     {
         _gameController.StartRound();
 
-        IDomino fakeDomino = new Mock<IDomino>().Object;
-
-        AddDominoToHand(_playerMock.Object, fakeDomino);
+        AddDominoToHand(_playerMock.Object, _dominoMock.Object);
 
         Assert.Throws<InvalidOperationException>(() =>
         {
-            _gameController.PlayDomino(_playerMock.Object, fakeDomino, BoardSide.Left);
+            _gameController.PlayDomino(_playerMock.Object, _dominoMock.Object, BoardSide.Left);
         });
     }
 
@@ -348,9 +346,7 @@ public class GameControllerTests
 
         // _board.Dominoes.AddFirst(new Domino((Dot)0, (Dot)0));
 
-        IDomino fakeDomino = new Mock<IDomino>().Object;
-
-        AddDominoToHand(_playerMock.Object, fakeDomino);
+        AddDominoToHand(_playerMock.Object, _dominoMock.Object);
 
         Assert.Throws<InvalidOperationException>(() =>
         {
@@ -456,14 +452,11 @@ public class GameControllerTests
 
         _gameController.Place(new Domino((Dot)6, (Dot)6), BoardSide.Left);
 
-        // IDomino fakeDomino = new Mock<IDomino>().Object;
-
-        Domino fakeDomino = new Domino((Dot)1, (Dot)2);
-        // AddDominoToHand(_playerMock.Object, fakeDomino);
+        Domino d = new Domino((Dot)1, (Dot)2);
 
         Assert.Throws<InvalidOperationException>(() =>
         {
-            _gameController.Place(fakeDomino, BoardSide.Left);
+            _gameController.Place(d, BoardSide.Left);
         });
     }
 
@@ -550,3 +543,4 @@ public class GameControllerTests
 
 
 }
+

@@ -4,6 +4,7 @@ using DominoGame.Core;
 using System.Collections.Generic;
 using NUnit.Framework.Internal.Execution;
 using System.Reflection;
+using NUnit.Framework.Interfaces;
 
 namespace DominoGame.Core.Tests;
 
@@ -358,10 +359,8 @@ public class GameControllerTests
     }
 
     [Test]
-    public void CanPlace_BoardNotEmpty_CanPlaceOnLeft_ReturnsTrue()
+    public void CanPlace_BoardNotEmpty_CanPlaceOnLeft_MatchesLeftPip_ReturnsTrue()
     {
-        _gameController.StartRound();
-
         _board.Dominoes.AddFirst(new Domino((Dot)4, (Dot)6));
 
         Domino domino = new Domino((Dot)4, (Dot)2);
@@ -371,22 +370,163 @@ public class GameControllerTests
 
         Assert.That(result, Is.True);
     }
+
+    [Test]
+    public void CanPlace_BoardNotEmpty_CanPlaceOnLeft_MatchesRightPip_ReturnsTrue()
+    {
+        _board.Dominoes.AddFirst(new Domino((Dot)4, (Dot)6));
+
+        Domino domino = new Domino((Dot)1, (Dot)4);
+
+        bool result = _gameController.CanPlace(domino, BoardSide.Left);
+
+        Assert.That(result, Is.True);
+    }
+
+    [Test]
+    public void CanPlace_BoardNotEmpty_CannotPlaceOnLeft_ReturnsFalse()
+    {
+        _board.Dominoes.AddFirst(new Domino((Dot)4, (Dot)6));
+
+        Domino domino = new Domino((Dot)2, (Dot)2);
+        SetHand(_playerMock.Object, domino);
+
+        bool result = _gameController.CanPlay(_playerMock.Object);
+
+        Assert.That(result, Is.False);
+    }
     
     [Test]
-    public void CanPlace_BoardNotEmpty_CanPlaceOnRight_ReturnsTrue()
+    public void CanPlace_BoardNotEmpty_CanPlaceOnRight_MatchesLeftPip_ReturnsTrue()
     {
-        _gameController.StartRound();
-
         _board.Dominoes.AddFirst(new Domino((Dot)1, (Dot)3));
 
-        Domino domino = new Domino((Dot)5, (Dot)3);
+        Domino domino = new Domino((Dot)3, (Dot)5);
         SetHand(_playerMock.Object, domino);
 
         bool result = _gameController.CanPlay(_playerMock.Object);
 
         Assert.That(result, Is.True);
     }
+
+    [Test]
+    public void CanPlace_BoardNotEmpty_CanPlaceOnRight_MatchesRightPip_ReturnsTrue()
+    {
+        _board.Dominoes.AddFirst(new Domino((Dot)1, (Dot)3));
+
+        Domino domino = new Domino((Dot)6, (Dot)3);
+
+        bool result = _gameController.CanPlace(domino, BoardSide.Right);
+
+        Assert.That(result, Is.True);
+    }
+
+    [Test]
+    public void CanPlace_BoardNotEmpty_CannotPlaceOnRight_ReturnsFalse()
+    {
+        _board.Dominoes.AddFirst(new Domino((Dot)1, (Dot)3));
+
+        Domino domino = new Domino((Dot)5, (Dot)2);
+        SetHand(_playerMock.Object, domino);
+
+        bool result = _gameController.CanPlay(_playerMock.Object);
+
+        Assert.That(result, Is.False);
+    }
+
+    [Test]
+    public void CountPips_ReturnsTotalPips()
+    {
+        _gameController.StartRound();
+
+        Domino domino1 = new Domino((Dot)2, (Dot)3); // Total pips = 5
+        Domino domino2 = new Domino((Dot)4, (Dot)6); // Total pips = 10
+
+        SetHand(_playerMock.Object, domino1, domino2);
+
+        int totalPips = _gameController.CountPips(_playerMock.Object);
+
+        Assert.That(totalPips, Is.EqualTo(15));
+    }
     
+    [Test]
+    public void Place_CannotPlace_ThrowsExeption()
+    {
+        // _gameController.StartRound();
+
+        _gameController.Place(new Domino((Dot)6, (Dot)6), BoardSide.Left);
+
+        // IDomino fakeDomino = new Mock<IDomino>().Object;
+
+        Domino fakeDomino = new Domino((Dot)1, (Dot)2);
+        // AddDominoToHand(_playerMock.Object, fakeDomino);
+
+        Assert.Throws<InvalidOperationException>(() =>
+        {
+            _gameController.Place(fakeDomino, BoardSide.Left);
+        });
+    }
+
+    [Test]
+    public void Place_BoardSideLeft_ShouldFlip()
+    {
+        _board.Dominoes.AddFirst(new Domino((Dot)4, (Dot)6));
+
+        Domino domino = new Domino((Dot)4, (Dot)2);
+
+        _gameController.Place(domino, BoardSide.Left);
+
+        Domino firstDomino = _gameController.Board.Dominoes.First.Value;
+
+        Assert.That(firstDomino.LeftPip, Is.EqualTo((Dot)2));
+        Assert.That(firstDomino.RightPip, Is.EqualTo((Dot)4));
+    }
+
+    [Test]
+    public void Place_BoardSideLeft_ShouldNotFlip()
+    {
+        _board.Dominoes.AddFirst(new Domino((Dot)4, (Dot)6));
+
+        Domino domino = new Domino((Dot)1, (Dot)4);
+
+        _gameController.Place(domino, BoardSide.Left);
+
+        Domino firstDomino = _gameController.Board.Dominoes.First.Value;
+
+        Assert.That(firstDomino.LeftPip, Is.EqualTo((Dot)1));
+        Assert.That(firstDomino.RightPip, Is.EqualTo((Dot)4));
+    }
+
+    [Test]
+    public void Place_BoardSideRight_ShouldFlip()
+    {
+        _board.Dominoes.AddFirst(new Domino((Dot)1, (Dot)3));
+
+        Domino domino = new Domino((Dot)6, (Dot)3);
+
+        _gameController.Place(domino, BoardSide.Right);
+
+        Domino lastDomino = _gameController.Board.Dominoes.Last.Value;
+
+        Assert.That(lastDomino.LeftPip, Is.EqualTo((Dot)3));
+        Assert.That(lastDomino.RightPip, Is.EqualTo((Dot)6));
+    }
+
+    [Test]
+    public void Place_BoardSideRight_ShouldNotFlip()
+    {
+        _board.Dominoes.AddFirst(new Domino((Dot)1, (Dot)3));
+
+        Domino domino = new Domino((Dot)3, (Dot)5);
+
+        _gameController.Place(domino, BoardSide.Right);
+
+        Domino lastDomino = _gameController.Board.Dominoes.Last.Value;
+
+        Assert.That(lastDomino.LeftPip, Is.EqualTo((Dot)3));
+        Assert.That(lastDomino.RightPip, Is.EqualTo((Dot)5));
+    }
+
     private void AddDominoToHand(IPlayer player, IDomino domino)
     {
         FieldInfo fieldInfo = typeof(GameController)
@@ -408,18 +548,5 @@ public class GameControllerTests
         hands[player].AddRange(dominoes);
     }
 
-    [Test]
-    public void CountPips_ReturnsTotalPips()
-    {
-        _gameController.StartRound();
 
-        Domino domino1 = new Domino((Dot)2, (Dot)3); // Total pips = 5
-        Domino domino2 = new Domino((Dot)4, (Dot)6); // Total pips = 10
-
-        SetHand(_playerMock.Object, domino1, domino2);
-
-        int totalPips = _gameController.CountPips(_playerMock.Object);
-
-        Assert.That(totalPips, Is.EqualTo(15));
-    }
 }

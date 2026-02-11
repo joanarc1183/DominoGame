@@ -7,6 +7,7 @@ using DominoGame.Core;
 using DominoGame.Wpf.Commands;
 using DominoGame.Wpf.Services;
 using DominoGame.Wpf.ViewModels;
+using Microsoft.Extensions.Logging;
 
 namespace DominoGame.Wpf;
 
@@ -109,11 +110,18 @@ public class GameViewModel : INotifyPropertyChanged
     /// Command untuk pass giliran.
     public RelayCommand<object> PassCommand { get; }
 
-    /// Menyiapkan game baru, binding data, dan event listener.
     public GameViewModel(IEnumerable<IPlayer> players, int maxScoreToWin)
+        : this(players, maxScoreToWin, LoggerFactory.Create(_ => { }))
+    {
+    }
+
+    /// Menyiapkan game baru, binding data, dan event listener.
+    public GameViewModel(IEnumerable<IPlayer> players, int maxScoreToWin, ILoggerFactory loggerFactory)
     {
         var playerList = players.ToList();
-        _game = new GameController(playerList, new Board(), maxScoreToWin);
+        
+        var gcLogger = loggerFactory.CreateLogger<GameController>();
+        _game = new GameController(playerList, new Board(), maxScoreToWin, gcLogger);
 
         foreach (var player in _game.Players)
         {

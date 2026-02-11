@@ -2,6 +2,8 @@ namespace DominoGame.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 public class GameController
 {
@@ -60,15 +62,18 @@ public class GameController
     public IPlayer? GameWinner => _gameWinner;
     // public IEnumerable<Player> Players => _players;
 
+    private readonly ILogger<GameController> _logger;
+
     // ================= CONSTRUCTOR =================
     // Membuat controller game dengan daftar pemain, board, dan target skor.
-    public GameController(List<IPlayer> players, IBoard board, int maxScoreToWin)
+    public GameController(List<IPlayer> players, IBoard board, int maxScoreToWin, ILogger<GameController>? logger = null)
     {
         _players = players;
         _board = board;
         _maxScoreToWin = maxScoreToWin;
         _dominoInHands = players.ToDictionary(p => p, _ => new List<IDomino>());
         _boneyard = new Boneyard(GenerateFullSet());
+        _logger = logger ?? NullLogger<GameController>.Instance;
     }
 
     // ================= GAME FLOW =================
@@ -76,6 +81,7 @@ public class GameController
     // Memulai ronde baru: reset, bagi kartu, dan set giliran pertama.
     public void StartRound()
     {
+        _logger.LogInformation("Starting new round for {PlayerCount} players.", _players.Count);
         ResetRound();
         // DecideFirstPlayer();
         DealInitialHands();
@@ -85,7 +91,11 @@ public class GameController
     // Pindah ke giliran berikutnya, termasuk handle pass dan cek akhir ronde.
     public void NextTurn()
     {
-        if (_roundEnded || _isGameEnded) return;
+        if (_roundEnded || _isGameEnded)
+        {
+            _logger.LogDebug("NextTurn ignored because round ended: {RoundEnded}, game ended: {GameEnded}.", _roundEnded, _isGameEnded);
+            return;
+        }
 
         IPlayer player = CurrentPlayer;
 
@@ -112,17 +122,27 @@ public class GameController
     public bool PlayDomino(IPlayer player, IDomino domino, BoardSide side)
     {
         if (player != CurrentPlayer)
+        {
+            _logger.LogWarning("PlayDomino rejected: {Player} is not current player ({CurrentPlayer}).", player.Name, CurrentPlayer.Name);
             return false;
+        }
 
         if (domino is not Domino concrete)
+        {
+            _logger.LogError("PlayDomino failed: unknown domino implementation for player {Player}.", player.Name);
             throw new InvalidOperationException("Domino implementation tidak dikenal.");
+        }
 
         if (!CanPlace(concrete, side))
+        {
+            _logger.LogWarning("PlayDomino rejected: {Player} cannot place {Left}|{Right} on {Side}.", player.Name, concrete.LeftPip, concrete.RightPip, side);
             return false;
+        }
 
         Place(concrete, side);
         _dominoInHands[player].Remove(domino);
         _consecutivePasses = 0;
+        _logger.LogInformation("{Player} placed {Left}|{Right} on {Side}.", player.Name, concrete.LeftPip, concrete.RightPip, side);
 
         OnDominoPlaced?.Invoke(player, domino, side);
         
@@ -133,9 +153,13 @@ public class GameController
     public bool PassTurn(IPlayer player)
     {
         if (player != CurrentPlayer)
+        {
+            _logger.LogWarning("PassTurn rejected: {Player} is not current player ({CurrentPlayer}).", player.Name, CurrentPlayer.Name);
             return false;
+        }
 
         _consecutivePasses++;
+        _logger.LogInformation("{Player} passed. Consecutive passes: {ConsecutivePasses}.", player.Name, _consecutivePasses);
         OnPlayerPassed?.Invoke(player);
         
         return true;
@@ -179,6 +203,7 @@ public class GameController
         if (emptyPlayer != null)
         {
             _roundEnded = true;
+            _logger.LogInformation("Round ended by empty hand. Winner candidate: {Winner}.", emptyPlayer.Name);
             HandleNormalWin(emptyPlayer);
             return;
         }
@@ -187,6 +212,7 @@ public class GameController
         if (_consecutivePasses >= _players.Count)
         {
             _roundEnded = true;
+            _logger.LogInformation("Round blocked after {ConsecutivePasses} consecutive passes.", _consecutivePasses);
             HandleBlockedGame();
         }
     }
@@ -200,6 +226,7 @@ public class GameController
             .Sum(d => (int)d.LeftPip + (int)d.RightPip);
 
         winner.Score += score;
+        _logger.LogInformation("Normal win: {Winner} gained {Score}. Total score: {TotalScore}.", winner.Name, score, winner.Score);
         OnRoundEnded?.Invoke(winner, false, SnapshotHands());
         CheckGameEnd();
     }
@@ -215,6 +242,7 @@ public class GameController
         // Tie → no winner
         if (lowestPlayers.Count > 1)
         {
+            _logger.LogInformation("Blocked game ended in tie with min pip total {MinPips}.", min);
             OnRoundEnded?.Invoke(null, true, SnapshotHands());
             return;
         }
@@ -223,6 +251,7 @@ public class GameController
 
         int gain = pipTotals.Sum(x => x.Value) - pipTotals[winner];
         winner.Score += gain;
+        _logger.LogInformation("Blocked win: {Winner} gained {Gain}. Total score: {TotalScore}.", winner.Name, gain, winner.Score);
 
         OnRoundEnded?.Invoke(winner, true, SnapshotHands());
         CheckGameEnd();
@@ -236,6 +265,7 @@ public class GameController
         if (_gameWinner != null)
         {
             _isGameEnded = true;
+            _logger.LogInformation("Game ended. Winner: {Winner} with score {Score}.", _gameWinner.Name, _gameWinner.Score);
             OnGameEnded?.Invoke(_gameWinner);
         }
     }
